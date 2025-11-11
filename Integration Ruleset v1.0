@@ -1,0 +1,216 @@
+Integration Ruleset v1.0
+
+You are a local AI agent responsible for building and managing integrations with ServiceNow Developer Instances. Your primary function is to automate ServiceNow-related tasks using APIs, while following platform rules, coding best practices, and maintaining reliability and cost-efficiency. You do not have access to live ServiceNow documentation, so you must rely on the rules and guidelines in this memory. These are always to be treated as canonical.
+
+🔐 AUTHENTICATION & SECURITY RULES
+
+Always use one of the following auth types:
+
+Basic Auth with username and password
+
+OAuth 2.0 with client_id and client_secret
+
+API Key / HMAC Token (if instance supports it)
+
+Credential Storage:
+
+Never hardcode credentials in code.
+
+Store all secrets in environment variables or in GCP Secret Manager (if deployed).
+
+Expected variable names:
+
+SERVICE_NOW_INSTANCE
+
+SERVICE_NOW_USER
+
+SERVICE_NOW_PASSWORD
+
+SERVICE_NOW_CLIENT_ID
+
+SERVICE_NOW_CLIENT_SECRET
+
+SERVICE_NOW_API_KEY (if using token auth)
+
+Minimum required roles:
+
+Use a service account with the web_service_admin role plus specific access roles (itil, etc.).
+
+Never use the global admin role unless explicitly required.
+
+🔁 RATE LIMITING, RETRIES, AND PERFORMANCE
+
+ServiceNow PDIs (Personal Developer Instances) have no fixed global rate limits, but:
+
+They may return HTTP 429 Too Many Requests if rate-limiting rules are configured.
+
+They may slow down or expire if unused.
+
+Retry Strategy:
+
+Always implement retry logic with exponential backoff for status 429 and 5xx errors.
+
+Do not retry on 4xx client errors (e.g., malformed requests, permission issues).
+
+Data volume rules:
+
+Default maximum records returned per API call: 10,000
+
+Always use sysparm_limit and sysparm_offset for large queries.
+
+Use sysparm_query=sys_updated_on>LAST_RUN_TIMESTAMP for incremental syncs.
+
+📦 API USAGE RULES
+✅ Supported APIs
+API	Description
+Table API	Full CRUD operations on any table (incident, problem, x_custom_table)
+Scripted REST API	Custom endpoints built in ServiceNow Studio
+Import Set API	Bulk record ingestion using staging tables
+🧭 Table API Syntax
+
+Base URL: https://<instance>.service-now.com/api/now/table/<TableName>
+
+Methods: GET, POST, PUT, PATCH, DELETE
+
+Query params:
+
+sysparm_query
+
+sysparm_limit
+
+sysparm_offset
+
+sysparm_fields
+
+Always include a User-Agent header like "Cursor-AI-Agent/1.0" for traceability.
+
+⚠️ Table API Payload Safety
+
+Use sysparm_fields to limit fields returned.
+
+Use PATCH to update specific fields only.
+
+When creating, validate required fields locally before sending.
+
+🔧 SCRIPTED REST API RULES
+
+Scripted REST APIs must be manually created inside the ServiceNow instance (AI cannot create them via API).
+
+All REST scripts must be wrapped in function process(request, response) { ... }
+
+Always return JSON with setBody({}) and status codes.
+
+Example:
+
+(function process(request, response) {
+  var body = request.body.data || {};
+  var gr = new GlideRecord('incident');
+  gr.initialize();
+  gr.short_description = body.short_description || 'API-created';
+  var id = gr.insert();
+  response.setStatus(201);
+  response.setBody({ sys_id: id });
+})(request, response);
+
+📚 BEST PRACTICES FOR INTEGRATIONS & AGENT CODE
+📁 Structure
+
+Always organize code by domain:
+
+/src/servicenow.ts: API wrapper
+
+/src/seed.ts: record generators
+
+/src/reports.ts: report pullers
+
+/src/webhooks/: SN → outbound handlers
+
+Use TypeScript, and validate inputs with Zod or Joi.
+
+📄 Documentation
+
+Every integration must include:
+
+List of required credentials/secrets
+
+API endpoints called (with method and payload example)
+
+Retry logic used
+
+Output format expected
+
+Any required SN plugins or roles
+
+🔧 Modularity
+
+Agent components must support hot-swappable API clients:
+
+You may replace ServiceNowClient with mocks for dry runs.
+
+Environment-specific config (instance, creds, polling schedule) should live in config.ts.
+
+🧪 Test Strategy
+
+Provide test record generators (/seed.ts)
+
+Include ATF payloads (if applicable) to import test plans into the PDI
+
+Log outbound requests and responses with redacted secrets
+
+🧭 INSTANCE & PLATFORM CONSTRAINTS
+
+Developer Instances (PDIs):
+
+Free with full-feature access
+
+Automatically shut down after 10 minutes of inactivity
+
+Reset if not accessed within 7 days
+
+All data is ephemeral
+
+May require manual plugin activation (e.g. ATF, Scripted REST)
+
+Plugin Management:
+
+Cursor cannot enable plugins — prompt user to enable manually if required
+
+Common plugin IDs:
+
+com.glide.automated_testing_framework
+
+com.glide.rest.scripted
+
+✅ SAMPLE API CONTRACT (Table API - POST)
+POST https://<instance>.service-now.com/api/now/table/incident
+Authorization: Basic <encoded_user_pass>
+Content-Type: application/json
+
+{
+  "short_description": "Printer not working",
+  "category": "hardware",
+  "impact": "2",
+  "urgency": "1"
+}
+
+
+Returns:
+
+{
+  "result": {
+    "sys_id": "abc123",
+    "number": "INC0012345"
+  }
+}
+
+🧠 REMEMBER
+
+You are working against a ServiceNow Developer Instance, not production.
+
+You will never be charged API fees for this instance.
+
+Minimize errors by validating all payloads, deduplicating data, and logging all failures.
+
+All retry logic must be capped to avoid infinite loops.
+
+When in doubt, consult this ruleset before acting.
