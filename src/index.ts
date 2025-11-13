@@ -9,8 +9,9 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import { config } from '../config/env';
 import { logger } from './utils/logger';
-import { IncidentCreateSchema, ResolveRequestSchema, ListIncidentsQuerySchema } from './utils/validation';
-import { createIncident, listIncidents } from './docsdesk/intake';
+import { ClientIncidentCreateSchema, ResolveRequestSchema, ListIncidentsQuerySchema } from './utils/validation';
+import { createClientIncident, listIncidents } from './docsdesk/intake';
+import { getAutomationActivity } from './docsdesk/activity';
 import { suggestArticles } from './docsdesk/kb';
 import { resolveIncident } from './docsdesk/resolve';
 import { getStats } from './docsdesk/stats';
@@ -824,47 +825,16 @@ app.get('/', (_req: Request, res: Response) => {
 
           <section id="tab-recent-tickets" class="tab-panel">
             <div class="tab-panel-inner">
-              <ul class="ticket-list">
-                <li class="ticket-row">
-                  <a class="ticket-link" href="#" target="_blank" rel="noopener noreferrer" data-sys-id="placeholder-1">
-                    <span class="ticket-client">Archer Insurance</span>
-                    <span class="ticket-divider">•</span>
-                    <span class="ticket-category">HubSpot / CRM</span>
-                    <span class="ticket-divider">•</span>
-                    <span class="ticket-summary">Lifecycle emails duplicating</span>
-                    <span class="ticket-state">Open</span>
-                  </a>
-                </li>
-                <li class="ticket-row">
-                  <a class="ticket-link" href="#" target="_blank" rel="noopener noreferrer" data-sys-id="placeholder-2">
-                    <span class="ticket-client">Hachman Construction</span>
-                    <span class="ticket-divider">•</span>
-                    <span class="ticket-category">Apple Business Essentials</span>
-                    <span class="ticket-divider">•</span>
-                    <span class="ticket-summary">New foreman iPhone</span>
-                    <span class="ticket-state">In Progress</span>
-                  </a>
-                </li>
-                <li class="ticket-row">
-                  <a class="ticket-link" href="#" target="_blank" rel="noopener noreferrer" data-sys-id="placeholder-3">
-                    <span class="ticket-client">Other</span>
-                    <span class="ticket-divider">•</span>
-                    <span class="ticket-category">Website</span>
-                    <span class="ticket-divider">•</span>
-                    <span class="ticket-summary">Homepage layout tweak</span>
-                    <span class="ticket-state">Resolved</span>
-                  </a>
-                </li>
+              <ul class="ticket-list" id="ticket-list">
+                <li class="ticket-loading">Loading tickets...</li>
               </ul>
             </div>
           </section>
 
           <section id="tab-automation-activity" class="tab-panel">
             <div class="tab-panel-inner">
-              <ul class="activity-list">
-                <li>Sent Archer HubSpot Playbook for CRM ticket INC0001234.</li>
-                <li>Queued follow-up reminder for Hachman website change request.</li>
-                <li>Suggested Apple Business Essentials device guide for new iPhone setup.</li>
+              <ul class="activity-list" id="activity-list">
+                <li class="activity-loading">Loading automation activity...</li>
               </ul>
             </div>
           </section>
@@ -1222,13 +1192,145 @@ app.get('/', (_req: Request, res: Response) => {
         return base + '/nav_to.do?uri=incident.do?sys_id=' + encodeURIComponent(sysId);
       }
 
-      // Update ticket links with ServiceNow URLs
-      const ticketLinks = document.querySelectorAll('.ticket-link[data-sys-id]');
-      ticketLinks.forEach(link => {
-        const sysId = link.getAttribute('data-sys-id');
-        const href = buildServiceNowLink(sysId);
-        link.setAttribute('href', href);
-      });
+      // Load recent tickets
+      async function loadRecentTickets() {
+        const ticketList = document.getElementById('ticket-list');
+        if (!ticketList) return;
+
+        try {
+          const response = await fetch('/incidents?source=bbp&limit=20&state=open');
+          if (!response.ok) throw new Error('Failed to load tickets');
+          
+          const data = await response.json();
+          ticketList.innerHTML = '';
+
+          if (data.incidents && data.incidents.length > 0) {
+            data.incidents.forEach(incident => {
+              const row = document.createElement('li');
+              row.className = 'ticket-row';
+              
+              const link = document.createElement('a');
+              link.className = 'ticket-link';
+              link.href = buildServiceNowLink(incident.sys_id);
+              link.target = '_blank';
+              link.rel = 'noopener noreferrer';
+              link.setAttribute('data-sys-id', incident.sys_id);
+
+              // Format state
+              const stateMap = {
+                '1': 'New',
+                '2': 'In Progress',
+                '3': 'On Hold',
+                '4': 'Awaiting',
+                '5': 'Resolved',
+                '6': 'Closed',
+                '7': 'Canceled'
+              };
+              const stateLabel = stateMap[incident.state] || ('State ' + incident.state);
+
+              // Format date
+              let dateStr = '';
+              if (incident.sys_created_on) {
+                const date = new Date(incident.sys_created_on);
+                dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+              }
+
+              const clientSpan = document.createElement('span');
+              clientSpan.className = 'ticket-client';
+              clientSpan.textContent = incident.client || 'Unknown Client';
+              
+              const divider1 = document.createElement('span');
+              divider1.className = 'ticket-divider';
+              divider1.textContent = '•';
+              
+              const categorySpan = document.createElement('span');
+              categorySpan.className = 'ticket-category';
+              categorySpan.textContent = incident.category || 'Uncategorized';
+              
+              const divider2 = document.createElement('span');
+              divider2.className = 'ticket-divider';
+              divider2.textContent = '•';
+              
+              const summarySpan = document.createElement('span');
+              summarySpan.className = 'ticket-summary';
+              summarySpan.textContent = incident.short_description || 'No description';
+              
+              const stateSpan = document.createElement('span');
+              stateSpan.className = 'ticket-state';
+              stateSpan.textContent = stateLabel;
+              
+              link.appendChild(clientSpan);
+              link.appendChild(divider1);
+              link.appendChild(categorySpan);
+              link.appendChild(divider2);
+              link.appendChild(summarySpan);
+              link.appendChild(stateSpan);
+
+              row.appendChild(link);
+              ticketList.appendChild(row);
+            });
+          } else {
+            ticketList.innerHTML = '<li class="ticket-empty">No tickets found. Create your first request above!</li>';
+          }
+        } catch (error) {
+          console.error('Error loading tickets:', error);
+          ticketList.innerHTML = '<li class="ticket-error">Failed to load tickets. Please refresh the page.</li>';
+        }
+      }
+
+      // Load automation activity
+      async function loadAutomationActivity() {
+        const activityList = document.getElementById('activity-list');
+        if (!activityList) return;
+
+        try {
+          const response = await fetch('/automation-activity?limit=50');
+          if (!response.ok) throw new Error('Failed to load activity');
+          
+          const data = await response.json();
+          activityList.innerHTML = '';
+
+          if (data.activities && data.activities.length > 0) {
+            data.activities.forEach(activity => {
+              const item = document.createElement('li');
+              
+              // Format timestamp
+              const date = new Date(activity.timestamp);
+              const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+              const timeStr = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+              
+              const clientPart = activity.client ? ' · ' + activity.client : '';
+              item.textContent = dateStr + ' · ' + activity.incidentNumber + clientPart + ' · ' + activity.summary;
+              
+              activityList.appendChild(item);
+            });
+          } else {
+            activityList.innerHTML = '<li>No automation activity yet. Activity will appear here when tickets are created.</li>';
+          }
+        } catch (error) {
+          console.error('Error loading activity:', error);
+          activityList.innerHTML = '<li>Failed to load automation activity. Please refresh the page.</li>';
+        }
+      }
+
+      // Load data when tabs are activated
+      function loadTabData(tabId) {
+        if (tabId === 'recent-tickets') {
+          loadRecentTickets();
+        } else if (tabId === 'automation-activity') {
+          loadAutomationActivity();
+        }
+      }
+
+      // Update activateTab to load data
+      const originalActivateTab = activateTab;
+      activateTab = function(id) {
+        originalActivateTab(id);
+        loadTabData(id);
+      };
+
+      // Load initial tab data
+      loadTabData('recent-tickets');
     });
   </script>
 </body>
@@ -1257,12 +1359,17 @@ app.post('/seed', async (_req: Request, res: Response, next: NextFunction) => {
 
 /**
  * Create incident endpoint
+ * Creates a ServiceNow incident and returns enriched response with classification
  */
 app.post('/incident', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const payload = IncidentCreateSchema.parse(req.body);
-    const incident = await createIncident(payload);
-    res.status(201).json(incident);
+    // Validate using the new Client Support Counter schema
+    const clientPayload = ClientIncidentCreateSchema.parse(req.body);
+    
+    // Create incident with classification enrichment
+    const response = await createClientIncident(clientPayload);
+    
+    res.status(201).json(response);
   } catch (error) {
     if (error instanceof Error && error.name === 'ZodError') {
       res.status(400).json({ error: 'Invalid request payload', details: error });
@@ -1274,17 +1381,32 @@ app.post('/incident', async (req: Request, res: Response, next: NextFunction) =>
 
 /**
  * List incidents endpoint
+ * Supports ?source=bbp query param to filter by BBP Support Counter tickets
  */
 app.get('/incidents', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const query = ListIncidentsQuerySchema.parse(req.query);
-    const result = await listIncidents(query);
+    const filterBySource = req.query.source === 'bbp';
+    const result = await listIncidents(query, filterBySource);
     res.json(result);
   } catch (error) {
     if (error instanceof Error && error.name === 'ZodError') {
       res.status(400).json({ error: 'Invalid query parameters', details: error });
       return;
     }
+    next(error);
+  }
+});
+
+/**
+ * Get automation activity endpoint
+ */
+app.get('/automation-activity', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 50;
+    const activities = await getAutomationActivity(limit);
+    res.json({ activities, count: activities.length });
+  } catch (error) {
     next(error);
   }
 });

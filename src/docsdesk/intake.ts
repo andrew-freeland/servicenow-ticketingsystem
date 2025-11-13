@@ -5,7 +5,8 @@
 
 import { servicenowClient } from '../clients/servicenow';
 import { logger } from '../utils/logger';
-import { IncidentCreate, ListIncidentsQuery } from '../utils/validation';
+import { IncidentCreate, ListIncidentsQuery, type ClientIncidentCreate } from '../utils/validation';
+import { classifyAndRecommend, type ClassificationResource } from './classification';
 
 export interface Incident {
   sys_id: string;
@@ -45,13 +46,130 @@ export async function createIncident(payload: IncidentCreate): Promise<Incident>
 }
 
 /**
- * List incidents with filtering and pagination
+ * Client incident response with classification enrichment
  */
-export async function listIncidents(query: ListIncidentsQuery = { state: 'open', limit: 20, offset: 0 }): Promise<{
-  incidents: Incident[];
+export interface ClientIncidentResponse {
+  sys_id: string;
+  number?: string;
+  client: string;
+  category: string;
+  shortDescription: string;
+  detailedDescription?: string;
+  state: string;
+  priority?: string;
+  topic: string;
+  recommendedResources: ClassificationResource[];
+}
+
+/**
+ * Create a client incident with auto-classification and resource recommendations
+ * This function creates the incident in ServiceNow and enriches the response with
+ * classification data (topic and recommended resources) without modifying the SN record
+ */
+export async function createClientIncident(
+  payload: ClientIncidentCreate
+): Promise<ClientIncidentResponse> {
+  logger.info('Creating client incident', {
+    client: payload.client,
+    category: payload.category,
+    shortDescription: payload.shortDescription,
+  });
+
+  // Adapt the client payload to the legacy IncidentCreate shape for ServiceNow
+  const legacyPayload: IncidentCreate = {
+    product: payload.category, // category maps to product field (which becomes category in SN)
+    short_description: payload.shortDescription,
+    description: [
+      payload.detailedDescription,
+      payload.errorCode ? `Error Code: ${payload.errorCode}` : null,
+      payload.client ? `Client: ${payload.client}` : null,
+    ]
+      .filter(Boolean)
+      .join('\n\n') || undefined,
+    priority: payload.priority, // Pass as-is
+  };
+
+  // Create incident in ServiceNow
+  const incident = await createIncident(legacyPayload);
+
+  // Run classification (pure function, no SN calls)
+  const enrichment = classifyAndRecommend({
+    client: payload.client,
+    category: payload.category,
+    errorCode: payload.errorCode,
+    shortDescription: payload.shortDescription,
+    detailedDescription: payload.detailedDescription || '',
+  });
+
+  // Write automation activity to work_notes
+  const automationNote = `[AUTO] Classified as '${enrichment.topic}'`;
+  const resourceList = enrichment.recommendedResources
+    .map(r => `  • ${r.label} (${r.type})`)
+    .join('\n');
+  const fullNote = resourceList
+    ? `${automationNote}\nRecommended resources:\n${resourceList}`
+    : automationNote;
+
+  try {
+    await servicenowClient.patch('incident', incident.sys_id, {
+      work_notes: fullNote,
+    });
+    logger.debug('Added automation work_notes', { sys_id: incident.sys_id });
+  } catch (error) {
+    // Log but don't fail the request if work_notes update fails
+    logger.warn('Failed to write automation work_notes', { error, sys_id: incident.sys_id });
+  }
+
+  logger.info('Incident created with classification', {
+    sys_id: incident.sys_id,
+    number: incident.number,
+    topic: enrichment.topic,
+    resourceCount: enrichment.recommendedResources.length,
+  });
+
+  // Return enriched response
+  return {
+    sys_id: incident.sys_id,
+    number: incident.number,
+    client: payload.client,
+    category: payload.category,
+    shortDescription: payload.shortDescription,
+    detailedDescription: payload.detailedDescription,
+    state: incident.state || '1', // Default to New state if not provided
+    priority: payload.priority,
+    topic: enrichment.topic,
+    recommendedResources: enrichment.recommendedResources,
+  };
+}
+
+/**
+ * Client incident for listing (includes additional fields from description parsing)
+ */
+export interface ClientIncidentListItem {
+  sys_id: string;
+  number?: string;
+  short_description: string;
+  description?: string;
+  state: string;
+  priority?: string;
+  category?: string;
+  sys_created_on?: string;
+  // Parsed from description
+  client?: string | null;
+}
+
+/**
+ * List incidents with filtering and pagination
+ * Optionally filters to incidents created via BBP Support Counter
+ */
+export async function listIncidents(
+  query: ListIncidentsQuery = { state: 'open', limit: 20, offset: 0 },
+  filterBySource: boolean = false
+): Promise<{
+  incidents: ClientIncidentListItem[];
   total?: number;
 }> {
-  logger.info('Listing incidents', { query });
+  logger.info('Listing incidents', { query, filterBySource });
 
   try {
     // Build query string
@@ -64,16 +182,36 @@ export async function listIncidents(query: ListIncidentsQuery = { state: 'open',
       sysparmQuery = `state=${query.state}`;
     }
 
-    const result = await servicenowClient.getTable<Incident>('incident', {
+    // Filter by source: look for "Client:" in description (how we mark BBP Support Counter tickets)
+    if (filterBySource) {
+      const sourceFilter = 'descriptionLIKEClient:';
+      sysparmQuery = sysparmQuery
+        ? `${sysparmQuery}^${sourceFilter}`
+        : sourceFilter;
+    }
+
+    const result = await servicenowClient.getTable<ClientIncidentListItem>('incident', {
       sysparm_query: sysparmQuery,
-      sysparm_fields: 'sys_id,number,short_description,description,state,priority,impact,urgency,category,x_cursor_suggested',
+      sysparm_fields: 'sys_id,number,short_description,description,state,priority,category,sys_created_on',
       sysparm_limit: query.limit,
       sysparm_offset: query.offset,
     });
 
-    logger.info(`Retrieved ${result.result.length} incidents`);
+    // Parse client from description (format: "Client: <name>")
+    const incidentsWithClient = result.result.map(inc => {
+      let client: string | null = null;
+      if (inc.description) {
+        const clientMatch = inc.description.match(/Client:\s*([^\n]+)/);
+        if (clientMatch) {
+          client = clientMatch[1].trim();
+        }
+      }
+      return { ...inc, client };
+    });
+
+    logger.info(`Retrieved ${incidentsWithClient.length} incidents`);
     return {
-      incidents: result.result,
+      incidents: incidentsWithClient,
     };
   } catch (error) {
     logger.error('Failed to list incidents', { error });
