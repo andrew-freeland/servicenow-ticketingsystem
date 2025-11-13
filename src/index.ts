@@ -257,13 +257,13 @@ app.get('/', (_req: Request, res: Response) => {
     .request-form-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 1rem 1.25rem;
+      gap: 1.25rem 1.5rem;
     }
 
     .form-field {
       display: flex;
       flex-direction: column;
-      gap: 0.25rem;
+      gap: 0.5rem;
       font-size: 0.86rem;
     }
 
@@ -365,6 +365,71 @@ app.get('/', (_req: Request, res: Response) => {
       padding: 0.5rem 0;
     }
 
+    .custom-dropdown-menu.expanded {
+      max-height: 10rem;
+    }
+
+    .custom-dropdown-search {
+      padding: 0.5rem 1rem;
+      border-bottom: 1px solid rgba(251, 146, 60, 0.2);
+      margin-bottom: 0.25rem;
+    }
+
+    .custom-dropdown-search input {
+      width: 100%;
+      border: 1px solid rgba(251, 146, 60, 0.3);
+      border-radius: 6px;
+      padding: 0.5rem 0.75rem;
+      font-size: 0.875rem;
+      outline: none;
+      background: #fff;
+      font-family: inherit;
+      transition: border-color 0.2s;
+    }
+
+    .custom-dropdown-search input:focus {
+      border-color: var(--bbp-orange);
+      box-shadow: 0 0 0 2px rgba(251, 146, 60, 0.1);
+    }
+
+    .custom-dropdown-option.filtered {
+      display: none;
+    }
+
+    /* Priority Buttons */
+    .priority-buttons {
+      display: flex;
+      gap: 0.75rem;
+      width: 100%;
+    }
+
+    .priority-btn {
+      flex: 1;
+      padding: 0.55rem 0.7rem;
+      border-radius: 10px;
+      border: 1px solid rgba(251, 146, 60, 0.3);
+      background: #fff;
+      color: #374151;
+      font-size: 0.9rem;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: center;
+    }
+
+    .priority-btn:hover {
+      border-color: rgba(251, 146, 60, 0.5);
+      background: rgba(251, 146, 60, 0.05);
+    }
+
+    .priority-btn.active {
+      background: var(--bbp-orange);
+      color: white;
+      border-color: var(--bbp-orange);
+      box-shadow: 0 2px 4px rgba(251, 146, 60, 0.2);
+    }
+
     .custom-dropdown-menu.open-down {
       top: 100%;
       margin-top: 0.25rem;
@@ -425,7 +490,7 @@ app.get('/', (_req: Request, res: Response) => {
     }
 
     .form-actions {
-      margin-top: 1rem;
+      margin-top: 1.5rem;
       display: flex;
       gap: 0.75rem;
       align-items: center;
@@ -485,19 +550,40 @@ app.get('/', (_req: Request, res: Response) => {
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      padding: 0.75rem 0;
+      padding: 0.75rem 0.75rem 0.75rem 0;
+      margin-left: -0.75rem;
+      padding-left: 0.75rem;
       color: #374151;
       text-decoration: none;
       font-size: 0.9375rem;
       border-bottom: 1px solid #e5e7eb;
-      transition: color 0.15s ease, background-color 0.15s ease;
+      transition: color 0.15s ease, background-color 0.15s ease, border-bottom-color 0.15s ease;
       cursor: pointer;
+      position: relative;
     }
 
     .ticket-link:hover {
       color: var(--bbp-orange);
       background-color: rgba(251, 146, 60, 0.04);
-      text-decoration: underline;
+      border-bottom-color: var(--bbp-orange);
+    }
+
+    .ticket-link:hover::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--bbp-orange);
+      z-index: 0;
+    }
+
+    .ticket-link:hover .ticket-state {
+      color: var(--bbp-orange);
+      background: rgba(249, 250, 251, 0.92);
+      position: relative;
+      z-index: 1;
     }
 
     .ticket-client {
@@ -525,10 +611,17 @@ app.get('/', (_req: Request, res: Response) => {
       font-size: 0.8125rem;
       background: #e5e7eb;
       color: #374151;
+      transition: color 0.15s ease;
+      position: relative;
+      z-index: 1;
     }
 
     .ticket-row:last-child .ticket-link {
       border-bottom: none;
+    }
+
+    .ticket-row:last-child .ticket-link:hover::after {
+      display: none;
     }
 
     .activity-list li {
@@ -708,12 +801,12 @@ app.get('/', (_req: Request, res: Response) => {
 
                 <div class="form-field">
                   <label for="priority">Priority <span class="optional">(optional)</span></label>
-                  <select id="priority" name="priority">
-                    <option value="">Select priority...</option>
-                    <option value="Low">Low</option>
-                    <option value="Normal">Normal</option>
-                    <option value="High">High</option>
-                  </select>
+                  <div class="priority-buttons">
+                    <button type="button" class="priority-btn" data-priority="Low">Low</button>
+                    <button type="button" class="priority-btn" data-priority="Normal">Normal</button>
+                    <button type="button" class="priority-btn" data-priority="High">High</button>
+                  </div>
+                  <input type="hidden" id="priority" name="priority" value="">
                 </div>
               </div>
 
@@ -949,6 +1042,35 @@ app.get('/', (_req: Request, res: Response) => {
           const menu = document.createElement('div');
           menu.className = 'custom-dropdown-menu';
           
+          // Add expanded class for Client and Category dropdowns
+          if (select.id === 'client' || select.id === 'category' || select.name === 'client' || select.name === 'category') {
+            menu.classList.add('expanded');
+          }
+          
+          // Add search input for Client dropdown
+          let searchInput = null;
+          if (select.id === 'client' || select.name === 'client') {
+            const searchContainer = document.createElement('div');
+            searchContainer.className = 'custom-dropdown-search';
+            searchInput = document.createElement('input');
+            searchInput.type = 'text';
+            searchInput.placeholder = 'Search clients...';
+            searchInput.addEventListener('input', (e) => {
+              const searchTerm = e.target.value.toLowerCase();
+              const options = menu.querySelectorAll('.custom-dropdown-option');
+              options.forEach(opt => {
+                const text = opt.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                  opt.classList.remove('filtered');
+                } else {
+                  opt.classList.add('filtered');
+                }
+              });
+            });
+            searchContainer.appendChild(searchInput);
+            menu.appendChild(searchContainer);
+          }
+          
           Array.from(select.options).forEach((option, index) => {
             const optionEl = document.createElement('div');
             optionEl.className = 'custom-dropdown-option' + (option.selected ? ' selected' : '');
@@ -964,6 +1086,14 @@ app.get('/', (_req: Request, res: Response) => {
                 opt.classList.remove('selected');
               });
               optionEl.classList.add('selected');
+              
+              // Clear search if it exists
+              if (searchInput) {
+                searchInput.value = '';
+                menu.querySelectorAll('.custom-dropdown-option').forEach(opt => {
+                  opt.classList.remove('filtered');
+                });
+              }
               
               // If "Other" is selected, convert to text input
               if (option.value.toLowerCase() === 'other' || option.text.toLowerCase() === 'other') {
@@ -991,7 +1121,8 @@ app.get('/', (_req: Request, res: Response) => {
               const rect = trigger.getBoundingClientRect();
               const spaceBelow = window.innerHeight - rect.bottom;
               const spaceAbove = rect.top;
-              const dropdownHeight = Math.min(6 * 16, menu.scrollHeight + 16); // 6rem in pixels + padding
+              const baseHeight = menu.classList.contains('expanded') ? 10 * 16 : 6 * 16;
+              const dropdownHeight = Math.min(baseHeight, menu.scrollHeight + 16);
               
               // Remove previous positioning classes
               menu.classList.remove('open-up', 'open-down');
@@ -1021,6 +1152,35 @@ app.get('/', (_req: Request, res: Response) => {
 
       // Initialize dropdowns on page load
       initCustomDropdowns();
+
+      // Initialize priority buttons
+      function initPriorityButtons() {
+        const priorityButtons = document.querySelectorAll('.priority-btn');
+        const priorityInput = document.getElementById('priority');
+        
+        if (!priorityInput) return;
+        
+        priorityButtons.forEach(btn => {
+          btn.addEventListener('click', () => {
+            const priority = btn.getAttribute('data-priority');
+            
+            // Remove active class from all buttons
+            priorityButtons.forEach(b => b.classList.remove('active'));
+            
+            // Add active class to clicked button
+            btn.classList.add('active');
+            
+            // Update hidden input value
+            priorityInput.value = priority;
+            
+            // Trigger change event for form validation
+            priorityInput.dispatchEvent(new Event('change', { bubbles: true }));
+          });
+        });
+      }
+
+      // Initialize priority buttons on page load
+      initPriorityButtons();
 
       // Build ServiceNow links for ticket entries
       function buildServiceNowLink(sysId) {
