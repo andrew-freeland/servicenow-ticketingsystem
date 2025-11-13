@@ -785,11 +785,16 @@ app.get('/', (_req: Request, res: Response) => {
                   <label for="category">Category <span class="optional">(required)</span></label>
                   <select id="category" name="category" required>
                     <option value="" selected>Select a category...</option>
-                    <option value="HubSpot / CRM">HubSpot / CRM</option>
-                    <option value="Email Templates">Email Templates</option>
-                    <option value="Website">Website</option>
-                    <option value="Apple Business Essentials">Apple Business Essentials</option>
-                    <option value="Integrations">Integrations</option>
+                    <option value="Google Workspace – Account Access">Google Workspace – Account Access</option>
+                    <option value="Google Workspace – Groups & Permissions">Google Workspace – Groups & Permissions</option>
+                    <option value="HubSpot – Lifecycle & Automation">HubSpot – Lifecycle & Automation</option>
+                    <option value="HubSpot – Email Deliverability">HubSpot – Email Deliverability</option>
+                    <option value="Buildertrend – Estimates & Proposals">Buildertrend – Estimates & Proposals</option>
+                    <option value="Buildertrend – Daily Logs & Timecards">Buildertrend – Daily Logs & Timecards</option>
+                    <option value="Apple Business Essentials – Device Enrollment">Apple Business Essentials – Device Enrollment</option>
+                    <option value="Website – DNS & Email Routing">Website – DNS & Email Routing</option>
+                    <option value="Website – Content & Layout">Website – Content & Layout</option>
+                    <option value="Integrations – Automation / Zapier / Make">Integrations – Automation / Zapier / Make</option>
                     <option value="Other">Other</option>
                   </select>
                 </div>
@@ -797,6 +802,11 @@ app.get('/', (_req: Request, res: Response) => {
                 <div class="form-field">
                   <label for="error-code">Error Code <span class="optional">(optional)</span></label>
                   <input type="text" id="error-code" name="error_code" placeholder="e.g., 500, Bounce 5.1.0, HubSpot WF-123">
+                </div>
+
+                <div class="form-field">
+                  <label for="client-email">Client Email <span class="optional">(optional)</span></label>
+                  <input type="email" id="client-email" name="client_email" placeholder="client@example.com">
                 </div>
 
                 <div class="form-field full-width">
@@ -910,23 +920,118 @@ app.get('/', (_req: Request, res: Response) => {
       // Form submission handler
       const form = document.getElementById('request-form');
       if (form) {
-        form.addEventListener('submit', function(e) {
+        form.addEventListener('submit', async function(e) {
           e.preventDefault();
           
           const formData = new FormData(this);
           const data = Object.fromEntries(formData);
           
-          console.log('Form data:', data);
+          // Map form field names to API field names
+          const payload = {
+            client: data.client,
+            category: data.category,
+            errorCode: data.error_code || undefined,
+            shortDescription: data.short_description,
+            detailedDescription: data.detailed_description || undefined,
+            priority: data.priority || undefined,
+            clientEmail: data.client_email || undefined,
+          };
+
+          // Remove undefined fields
+          Object.keys(payload).forEach(key => {
+            if (payload[key] === undefined || payload[key] === '') {
+              delete payload[key];
+            }
+          });
           
-          // Show demo message
-          const demoMessage = document.getElementById('demo-message');
-          if (demoMessage) {
-            demoMessage.classList.add('show');
+          const submitBtn = this.querySelector('.submit-btn');
+          const originalText = submitBtn?.textContent;
+          
+          try {
+            if (submitBtn) {
+              submitBtn.disabled = true;
+              submitBtn.textContent = 'Submitting...';
+            }
+
+            const response = await fetch('/incident', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(payload),
+            });
+
+            if (!response.ok) {
+              const errorData = await response.json();
+              throw new Error(errorData.error || 'Failed to create incident');
+            }
+
+            const result = await response.json();
+            console.log('Incident created:', result);
+
+            // Show success message
+            const demoMessage = document.getElementById('demo-message');
+            if (demoMessage) {
+              const ticketNumber = result.number || 'created';
+              const emailNote = result.automation?.emailSent ? ' Acknowledgement email sent.' : '';
+              demoMessage.textContent = 'Success! Ticket #' + ticketNumber + ' has been created.' + emailNote;
+              demoMessage.style.background = '#d1fae5';
+              demoMessage.style.borderColor = '#10b981';
+              demoMessage.style.color = '#065f46';
+              demoMessage.classList.add('show');
+              
+              // Scroll to message
+              setTimeout(() => {
+                demoMessage.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+              }, 100);
+            }
+
+            // Reset form
+            this.reset();
+            // Reset priority buttons
+            document.querySelectorAll('.priority-btn').forEach(btn => btn.classList.remove('active'));
+            // Reset dropdown triggers
+            document.querySelectorAll('.custom-dropdown-trigger').forEach(trigger => {
+              const select = trigger.closest('.custom-dropdown')?.querySelector('select');
+              if (select) {
+                if (select.id === 'client' || select.name === 'client') {
+                  trigger.textContent = 'Select a client...';
+                } else if (select.id === 'category' || select.name === 'category') {
+                  trigger.textContent = 'Select a category...';
+                }
+              }
+            });
+
+            // Reload recent tickets if on that tab
+            if (document.getElementById('tab-recent-tickets')?.classList.contains('active')) {
+              loadRecentTickets();
+            }
+            // Reload automation activity if on that tab
+            if (document.getElementById('tab-automation-activity')?.classList.contains('active')) {
+              loadAutomationActivity();
+            }
+          } catch (error) {
+            console.error('Error creating incident:', error);
             
-            // Scroll to message
-            setTimeout(() => {
-              demoMessage.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            }, 100);
+            // Show error message
+            const demoMessage = document.getElementById('demo-message');
+            if (demoMessage) {
+              const errorMsg = error instanceof Error ? error.message : 'Failed to create incident. Please try again.';
+              demoMessage.textContent = 'Error: ' + errorMsg;
+              demoMessage.style.background = '#fee2e2';
+              demoMessage.style.borderColor = '#ef4444';
+              demoMessage.style.color = '#991b1b';
+              demoMessage.classList.add('show');
+              
+              setTimeout(() => {
+                demoMessage.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+              }, 100);
+            }
+          } finally {
+            if (submitBtn) {
+              submitBtn.disabled = false;
+              submitBtn.textContent = originalText || 'Submit Request';
+            }
           }
         });
       }

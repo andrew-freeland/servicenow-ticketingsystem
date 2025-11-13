@@ -20,12 +20,87 @@ export interface ClassificationRule {
 }
 
 export const CLASSIFICATION_RULES: ClassificationRule[] = [
-  // HubSpot / CRM rules
+  // Google Workspace – Account Access rules
   {
-    category: 'HubSpot / CRM',
-    matchKeywords: ['lifecycle', 'workflow', 'automation', 'deal stage', 'pipeline'],
+    category: 'Google Workspace – Account Access',
+    matchKeywords: ['password', 'login', 'access', 'account', 'locked', 'reset'],
+    topic: 'Google Workspace Account Access',
+    resources: [
+      {
+        type: 'doc',
+        label: 'Google Workspace Account Access Troubleshooting',
+        url: 'https://support.google.com/a/answer/1728857',
+      },
+      {
+        type: 'doc',
+        label: 'Reset Google Workspace User Password',
+        url: 'https://support.google.com/a/answer/33319',
+      },
+      {
+        type: 'video',
+        label: 'Google Workspace Admin Console Walkthrough',
+        url: 'https://www.loom.com/share/google-workspace-admin-console',
+      },
+      {
+        type: 'doc',
+        label: 'Two-Factor Authentication Setup Guide',
+        url: 'https://support.google.com/a/answer/175197',
+      },
+    ],
+  },
+  {
+    category: 'Google Workspace – Account Access',
+    topic: 'General Google Workspace Account Access Support',
+    resources: [
+      {
+        type: 'doc',
+        label: 'Google Workspace Admin Help',
+        url: 'https://support.google.com/a',
+      },
+    ],
+  },
+
+  // Google Workspace – Groups & Permissions rules
+  {
+    category: 'Google Workspace – Groups & Permissions',
+    matchKeywords: ['group', 'permission', 'share', 'access', 'member'],
+    topic: 'Google Workspace Groups & Permissions',
+    resources: [
+      {
+        type: 'doc',
+        label: 'Manage Google Groups',
+        url: 'https://support.google.com/a/answer/167100',
+      },
+      {
+        type: 'doc',
+        label: 'Share Files and Folders in Google Drive',
+        url: 'https://support.google.com/drive/answer/7166529',
+      },
+      {
+        type: 'video',
+        label: 'Google Workspace Permissions Overview',
+        url: 'https://www.loom.com/share/google-workspace-permissions',
+      },
+    ],
+  },
+  {
+    category: 'Google Workspace – Groups & Permissions',
+    topic: 'General Google Workspace Groups & Permissions Support',
+    resources: [
+      {
+        type: 'doc',
+        label: 'Google Workspace Admin Help',
+        url: 'https://support.google.com/a',
+      },
+    ],
+  },
+
+  // HubSpot – Lifecycle & Automation rules
+  {
+    category: 'HubSpot – Lifecycle & Automation',
+    matchKeywords: ['lifecycle', 'workflow', 'automation', 'deal stage', 'pipeline', 'enrollment'],
     matchErrorCodes: ['WF-', 'HS-WF'],
-    topic: 'HubSpot Lifecycle Issues',
+    topic: 'HubSpot Lifecycle & Automation',
     resources: [
       {
         type: 'doc',
@@ -37,59 +112,136 @@ export const CLASSIFICATION_RULES: ClassificationRule[] = [
         label: 'HubSpot Workflow Debug Walkthrough',
         url: 'https://www.loom.com/share/hubspot-workflow-debug',
       },
-    ],
-  },
-  {
-    category: 'HubSpot / CRM',
-    matchKeywords: ['contact', 'company', 'property', 'field', 'custom property'],
-    topic: 'HubSpot Data Management',
-    resources: [
       {
         type: 'doc',
-        label: 'HubSpot Custom Properties Guide',
-        url: 'https://docs.example.com/hubspot-custom-properties',
-      },
-      {
-        type: 'doc',
-        label: 'HubSpot Data Import Best Practices',
-        url: 'https://docs.example.com/hubspot-data-import',
+        label: 'HubSpot Automation Best Practices',
+        url: 'https://docs.example.com/hubspot-automation-best-practices',
       },
     ],
   },
   {
-    category: 'HubSpot / CRM',
-    matchKeywords: ['integration', 'api', 'webhook', 'sync'],
-    topic: 'HubSpot Integrations',
+    category: 'HubSpot – Lifecycle & Automation',
+    topic: 'General HubSpot Lifecycle & Automation Support',
     resources: [
       {
         type: 'doc',
-        label: 'HubSpot API Integration Guide',
-        url: 'https://docs.example.com/hubspot-api-integration',
-      },
-      {
-        type: 'video',
-        label: 'HubSpot Webhook Setup Tutorial',
-        url: 'https://www.loom.com/share/hubspot-webhook-setup',
-      },
-    ],
-  },
-  {
-    category: 'HubSpot / CRM',
-    topic: 'General HubSpot Support',
-    resources: [
-      {
-        type: 'doc',
-        label: 'HubSpot General Troubleshooting Guide',
-        url: 'https://docs.example.com/hubspot-general-troubleshooting',
+        label: 'HubSpot Lifecycle & Automation Documentation',
+        url: 'https://docs.example.com/hubspot-lifecycle-automation',
       },
     ],
   },
 
-  // Apple Business Essentials rules
+  // HubSpot – Email Deliverability rules
   {
-    category: 'Apple Business Essentials',
-    matchKeywords: ['iphone', 'ipad', 'device', 'enrollment', 'mdm'],
-    topic: 'Apple Device Management',
+    category: 'HubSpot – Email Deliverability',
+    matchKeywords: ['bounce', 'delivery', 'spam', 'dkim', 'spf', 'email', 'send'],
+    matchErrorCodes: ['Bounce', '5.1.0', '5.7.1'],
+    topic: 'HubSpot Email Deliverability',
+    resources: [
+      {
+        type: 'doc',
+        label: 'HubSpot Email Deliverability Guide',
+        url: 'https://docs.example.com/hubspot-email-deliverability',
+      },
+      {
+        type: 'doc',
+        label: 'SPF and DKIM Configuration for HubSpot',
+        url: 'https://docs.example.com/hubspot-spf-dkim',
+      },
+      {
+        type: 'video',
+        label: 'Troubleshooting Email Bounces',
+        url: 'https://www.loom.com/share/hubspot-email-bounces',
+      },
+    ],
+  },
+  {
+    category: 'HubSpot – Email Deliverability',
+    topic: 'General HubSpot Email Deliverability Support',
+    resources: [
+      {
+        type: 'doc',
+        label: 'HubSpot Email Deliverability Documentation',
+        url: 'https://docs.example.com/hubspot-email-deliverability-docs',
+      },
+    ],
+  },
+
+  // Buildertrend – Estimates & Proposals rules
+  {
+    category: 'Buildertrend – Estimates & Proposals',
+    matchKeywords: ['estimate', 'proposal', 'quote', 'bid', 'pricing'],
+    topic: 'Buildertrend Estimates & Proposals',
+    resources: [
+      {
+        type: 'doc',
+        label: 'Buildertrend Estimates Guide',
+        url: 'https://docs.example.com/buildertrend-estimates',
+      },
+      {
+        type: 'video',
+        label: 'Creating Proposals in Buildertrend',
+        url: 'https://www.loom.com/share/buildertrend-proposals',
+      },
+      {
+        type: 'doc',
+        label: 'Buildertrend Pricing Best Practices',
+        url: 'https://docs.example.com/buildertrend-pricing',
+      },
+    ],
+  },
+  {
+    category: 'Buildertrend – Estimates & Proposals',
+    topic: 'General Buildertrend Estimates & Proposals Support',
+    resources: [
+      {
+        type: 'doc',
+        label: 'Buildertrend Estimates & Proposals Documentation',
+        url: 'https://docs.example.com/buildertrend-estimates-docs',
+      },
+    ],
+  },
+
+  // Buildertrend – Daily Logs & Timecards rules
+  {
+    category: 'Buildertrend – Daily Logs & Timecards',
+    matchKeywords: ['log', 'timecard', 'time', 'hours', 'attendance', 'daily'],
+    topic: 'Buildertrend Daily Logs & Timecards',
+    resources: [
+      {
+        type: 'doc',
+        label: 'Buildertrend Daily Logs Guide',
+        url: 'https://docs.example.com/buildertrend-daily-logs',
+      },
+      {
+        type: 'video',
+        label: 'Timecard Management in Buildertrend',
+        url: 'https://www.loom.com/share/buildertrend-timecards',
+      },
+      {
+        type: 'doc',
+        label: 'Buildertrend Time Tracking Best Practices',
+        url: 'https://docs.example.com/buildertrend-time-tracking',
+      },
+    ],
+  },
+  {
+    category: 'Buildertrend – Daily Logs & Timecards',
+    topic: 'General Buildertrend Daily Logs & Timecards Support',
+    resources: [
+      {
+        type: 'doc',
+        label: 'Buildertrend Daily Logs & Timecards Documentation',
+        url: 'https://docs.example.com/buildertrend-logs-timecards-docs',
+      },
+    ],
+  },
+
+  // Apple Business Essentials – Device Enrollment rules
+  {
+    category: 'Apple Business Essentials – Device Enrollment',
+    matchKeywords: ['iphone', 'ipad', 'device', 'enrollment', 'mdm', 'enroll'],
+    topic: 'Apple Business Essentials Device Enrollment',
     resources: [
       {
         type: 'doc',
@@ -101,37 +253,65 @@ export const CLASSIFICATION_RULES: ClassificationRule[] = [
         label: 'MDM Configuration Walkthrough',
         url: 'https://www.loom.com/share/apple-mdm-config',
       },
-    ],
-  },
-  {
-    category: 'Apple Business Essentials',
-    matchKeywords: ['user', 'account', 'license', 'subscription'],
-    topic: 'Apple Business Essentials User Management',
-    resources: [
       {
         type: 'doc',
-        label: 'User Account Management Guide',
-        url: 'https://docs.example.com/apple-user-management',
+        label: 'Device Enrollment Troubleshooting',
+        url: 'https://docs.example.com/apple-enrollment-troubleshooting',
       },
     ],
   },
   {
-    category: 'Apple Business Essentials',
-    topic: 'General Apple Business Essentials Support',
+    category: 'Apple Business Essentials – Device Enrollment',
+    topic: 'General Apple Business Essentials Device Enrollment Support',
     resources: [
       {
         type: 'doc',
-        label: 'Apple Business Essentials Troubleshooting',
-        url: 'https://docs.example.com/apple-business-essentials-troubleshooting',
+        label: 'Apple Business Essentials Device Enrollment Documentation',
+        url: 'https://docs.example.com/apple-device-enrollment-docs',
       },
     ],
   },
 
-  // Website rules
+  // Website – DNS & Email Routing rules
   {
-    category: 'Website',
-    matchKeywords: ['layout', 'design', 'css', 'styling', 'responsive'],
-    topic: 'Website Design & Layout',
+    category: 'Website – DNS & Email Routing',
+    matchKeywords: ['dns', 'domain', 'mx', 'spf', 'dkim', 'email routing', 'nameserver'],
+    topic: 'Website DNS & Email Routing',
+    resources: [
+      {
+        type: 'doc',
+        label: 'DNS Configuration Guide',
+        url: 'https://docs.example.com/dns-configuration',
+      },
+      {
+        type: 'doc',
+        label: 'Email Routing Setup',
+        url: 'https://docs.example.com/email-routing-setup',
+      },
+      {
+        type: 'video',
+        label: 'DNS Record Management Tutorial',
+        url: 'https://www.loom.com/share/dns-management',
+      },
+    ],
+  },
+  {
+    category: 'Website – DNS & Email Routing',
+    topic: 'General Website DNS & Email Routing Support',
+    resources: [
+      {
+        type: 'doc',
+        label: 'Website DNS & Email Routing Documentation',
+        url: 'https://docs.example.com/website-dns-email-docs',
+      },
+    ],
+  },
+
+  // Website – Content & Layout rules
+  {
+    category: 'Website – Content & Layout',
+    matchKeywords: ['layout', 'design', 'css', 'styling', 'responsive', 'content', 'page'],
+    topic: 'Website Content & Layout',
     resources: [
       {
         type: 'doc',
@@ -143,102 +323,51 @@ export const CLASSIFICATION_RULES: ClassificationRule[] = [
         label: 'Responsive Design Best Practices',
         url: 'https://www.loom.com/share/responsive-design',
       },
-    ],
-  },
-  {
-    category: 'Website',
-    matchKeywords: ['broken', 'error', '404', '500', 'down'],
-    matchErrorCodes: ['500', '404', '503'],
-    topic: 'Website Errors & Downtime',
-    resources: [
       {
         type: 'doc',
-        label: 'Website Error Troubleshooting',
-        url: 'https://docs.example.com/website-error-troubleshooting',
-      },
-      {
-        type: 'doc',
-        label: 'Uptime Monitoring Setup',
-        url: 'https://docs.example.com/uptime-monitoring',
+        label: 'Content Management Best Practices',
+        url: 'https://docs.example.com/content-management',
       },
     ],
   },
   {
-    category: 'Website',
-    matchKeywords: ['performance', 'slow', 'speed', 'load time'],
-    topic: 'Website Performance',
+    category: 'Website – Content & Layout',
+    topic: 'General Website Content & Layout Support',
     resources: [
       {
         type: 'doc',
-        label: 'Website Performance Optimization',
-        url: 'https://docs.example.com/website-performance',
-      },
-    ],
-  },
-  {
-    category: 'Website',
-    topic: 'General Website Support',
-    resources: [
-      {
-        type: 'doc',
-        label: 'Website Maintenance Guide',
-        url: 'https://docs.example.com/website-maintenance',
+        label: 'Website Content & Layout Documentation',
+        url: 'https://docs.example.com/website-content-layout-docs',
       },
     ],
   },
 
-  // Email Templates rules
+  // Integrations – Automation / Zapier / Make rules
   {
-    category: 'Email Templates',
-    matchKeywords: ['template', 'email', 'campaign', 'send'],
-    topic: 'Email Template Management',
+    category: 'Integrations – Automation / Zapier / Make',
+    matchKeywords: ['zapier', 'make', 'automation', 'workflow', 'trigger', 'action'],
+    topic: 'Integrations Automation (Zapier / Make)',
     resources: [
       {
         type: 'doc',
-        label: 'Email Template Best Practices',
-        url: 'https://docs.example.com/email-template-best-practices',
+        label: 'Zapier Integration Guide',
+        url: 'https://docs.example.com/zapier-integration',
+      },
+      {
+        type: 'doc',
+        label: 'Make (Integromat) Automation Guide',
+        url: 'https://docs.example.com/make-automation',
       },
       {
         type: 'video',
-        label: 'Creating Effective Email Templates',
-        url: 'https://www.loom.com/share/email-templates',
+        label: 'Building Automation Workflows',
+        url: 'https://www.loom.com/share/automation-workflows',
       },
     ],
   },
   {
-    category: 'Email Templates',
-    matchKeywords: ['bounce', 'delivery', 'spam', 'dkim', 'spf'],
-    matchErrorCodes: ['Bounce'],
-    topic: 'Email Delivery Issues',
-    resources: [
-      {
-        type: 'doc',
-        label: 'Email Delivery Troubleshooting',
-        url: 'https://docs.example.com/email-delivery-troubleshooting',
-      },
-      {
-        type: 'doc',
-        label: 'SPF and DKIM Configuration',
-        url: 'https://docs.example.com/spf-dkim-config',
-      },
-    ],
-  },
-  {
-    category: 'Email Templates',
-    topic: 'General Email Template Support',
-    resources: [
-      {
-        type: 'doc',
-        label: 'Email Template Documentation',
-        url: 'https://docs.example.com/email-template-docs',
-      },
-    ],
-  },
-
-  // Integrations rules
-  {
-    category: 'Integrations',
-    matchKeywords: ['api', 'webhook', 'sync', 'connection'],
+    category: 'Integrations – Automation / Zapier / Make',
+    matchKeywords: ['api', 'webhook', 'sync', 'connection', 'integration'],
     topic: 'Integration Setup & Configuration',
     resources: [
       {
@@ -254,7 +383,7 @@ export const CLASSIFICATION_RULES: ClassificationRule[] = [
     ],
   },
   {
-    category: 'Integrations',
+    category: 'Integrations – Automation / Zapier / Make',
     matchKeywords: ['error', 'failed', 'timeout', 'authentication'],
     topic: 'Integration Errors',
     resources: [
@@ -266,13 +395,13 @@ export const CLASSIFICATION_RULES: ClassificationRule[] = [
     ],
   },
   {
-    category: 'Integrations',
-    topic: 'General Integration Support',
+    category: 'Integrations – Automation / Zapier / Make',
+    topic: 'General Integration Automation Support',
     resources: [
       {
         type: 'doc',
-        label: 'Integration Documentation',
-        url: 'https://docs.example.com/integration-docs',
+        label: 'Integration Automation Documentation',
+        url: 'https://docs.example.com/integration-automation-docs',
       },
     ],
   },
@@ -290,4 +419,5 @@ export const CLASSIFICATION_RULES: ClassificationRule[] = [
     ],
   },
 ];
+
 

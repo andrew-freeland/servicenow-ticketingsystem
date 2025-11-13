@@ -7,6 +7,7 @@ import { servicenowClient } from '../clients/servicenow';
 import { logger } from '../utils/logger';
 import { IncidentCreate, ListIncidentsQuery, type ClientIncidentCreate } from '../utils/validation';
 import { classifyAndRecommend, type ClassificationResource } from './classification';
+import { automateGoogleWorkspaceAccountAccess, hasAutomation } from './automation';
 
 export interface Incident {
   sys_id: string;
@@ -59,6 +60,12 @@ export interface ClientIncidentResponse {
   priority?: string;
   topic: string;
   recommendedResources: ClassificationResource[];
+  automation?: {
+    classified: boolean;
+    emailSent: boolean;
+    emailProvider?: string;
+    workNoteAdded: boolean;
+  };
 }
 
 /**
@@ -92,7 +99,19 @@ export async function createClientIncident(
   // Create incident in ServiceNow
   const incident = await createIncident(legacyPayload);
 
+  // Check if this category has special automation (Candidate 1: Google Workspace – Account Access)
+  let automationResult = null;
+  if (hasAutomation(payload.category)) {
+    logger.info('Running special automation for category', { category: payload.category });
+    automationResult = await automateGoogleWorkspaceAccountAccess(
+      payload,
+      incident.sys_id,
+      incident.number
+    );
+  }
+
   // Run classification (pure function, no SN calls)
+  // If automation already ran, it will have written work notes, but we still need enrichment for the response
   const enrichment = classifyAndRecommend({
     client: payload.client,
     category: payload.category,
@@ -101,30 +120,37 @@ export async function createClientIncident(
     detailedDescription: payload.detailedDescription || '',
   });
 
-  // Write automation activity to work_notes
-  const automationNote = `[AUTO] Classified as '${enrichment.topic}'`;
-  const resourceList = enrichment.recommendedResources
-    .map(r => `  • ${r.label} (${r.type})`)
-    .join('\n');
-  const fullNote = resourceList
-    ? `${automationNote}\nRecommended resources:\n${resourceList}`
-    : automationNote;
+  // Write automation activity to work_notes (only if automation didn't already handle it)
+  if (!automationResult) {
+    const automationNote = `[AUTO] Classified as '${enrichment.topic}'`;
+    const resourceList = enrichment.recommendedResources
+      .map(r => `  • ${r.label} (${r.type})`)
+      .join('\n');
+    const fullNote = resourceList
+      ? `${automationNote}\nRecommended resources:\n${resourceList}`
+      : automationNote;
 
-  try {
-    await servicenowClient.patch('incident', incident.sys_id, {
-      work_notes: fullNote,
-    });
-    logger.debug('Added automation work_notes', { sys_id: incident.sys_id });
-  } catch (error) {
-    // Log but don't fail the request if work_notes update fails
-    logger.warn('Failed to write automation work_notes', { error, sys_id: incident.sys_id });
+    try {
+      await servicenowClient.patch('incident', incident.sys_id, {
+        work_notes: fullNote,
+      });
+      logger.debug('Added automation work_notes', { sys_id: incident.sys_id });
+    } catch (error) {
+      // Log but don't fail the request if work_notes update fails
+      logger.warn('Failed to write automation work_notes', { error, sys_id: incident.sys_id });
+    }
   }
+
+  // Use automation enrichment if available, otherwise use classification enrichment
+  const finalTopic = automationResult?.enrichment.topic || enrichment.topic;
+  const finalResources = automationResult?.enrichment.resources || enrichment.recommendedResources;
 
   logger.info('Incident created with classification', {
     sys_id: incident.sys_id,
     number: incident.number,
-    topic: enrichment.topic,
-    resourceCount: enrichment.recommendedResources.length,
+    topic: finalTopic,
+    resourceCount: finalResources.length,
+    automationRan: !!automationResult,
   });
 
   // Return enriched response
@@ -137,8 +163,14 @@ export async function createClientIncident(
     detailedDescription: payload.detailedDescription,
     state: incident.state || '1', // Default to New state if not provided
     priority: payload.priority,
-    topic: enrichment.topic,
-    recommendedResources: enrichment.recommendedResources,
+    topic: finalTopic,
+    recommendedResources: finalResources,
+    automation: automationResult ? {
+      classified: automationResult.classified,
+      emailSent: automationResult.emailSent,
+      emailProvider: automationResult.emailProvider,
+      workNoteAdded: automationResult.workNoteAdded,
+    } : undefined,
   };
 }
 

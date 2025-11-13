@@ -54,23 +54,34 @@ export type ListIncidentsQuery = z.infer<typeof ListIncidentsQuerySchema>;
 export const ClientPriorityEnum = z.enum(['Low', 'Normal', 'High']);
 
 /**
+ * Client Support Counter category enum
+ */
+export const CategoryEnum = z.enum([
+  'Google Workspace – Account Access',
+  'Google Workspace – Groups & Permissions',
+  'HubSpot – Lifecycle & Automation',
+  'HubSpot – Email Deliverability',
+  'Buildertrend – Estimates & Proposals',
+  'Buildertrend – Daily Logs & Timecards',
+  'Apple Business Essentials – Device Enrollment',
+  'Website – DNS & Email Routing',
+  'Website – Content & Layout',
+  'Integrations – Automation / Zapier / Make',
+  'Other',
+]);
+
+/**
  * Client Support Counter incident creation schema
  * Matches the frontend "New Request" form fields
  */
 export const ClientIncidentCreateSchema = z.object({
   client: z.string().min(1).describe('Client name'),
-  category: z.enum([
-    'HubSpot / CRM',
-    'Email Templates',
-    'Website',
-    'Apple Business Essentials',
-    'Integrations',
-    'Other'
-  ]).describe('Request category'),
+  category: CategoryEnum.describe('Request category'),
   errorCode: z.string().optional().describe('Optional error code'),
   shortDescription: z.string().min(1).describe('Short description of the issue'),
   detailedDescription: z.string().optional().describe('Detailed description'),
   priority: ClientPriorityEnum.optional().describe('Priority level'),
+  clientEmail: z.string().email().optional().describe('Client email for acknowledgement'),
 }).strict(); // Reject unknown fields
 
 export type ClientIncidentCreate = z.infer<typeof ClientIncidentCreateSchema>;
