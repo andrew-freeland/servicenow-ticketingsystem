@@ -101,14 +101,17 @@ async function writeAutomationWorkNote(
   sysId: string,
   topic: string,
   resources: typeof GOOGLE_WORKSPACE_ACCOUNT_ACCESS_RESOURCES,
-  emailSent: boolean
+  emailSent: boolean,
+  resolvedEmail?: string
 ): Promise<boolean> {
   try {
     const resourceList = resources
       .map(r => `  • ${r.label} (${r.type})`)
       .join('\n');
     
-    const emailStatus = emailSent 
+    const emailStatus = emailSent && resolvedEmail
+      ? `Acknowledgement email sent to ${resolvedEmail}.`
+      : emailSent
       ? 'Acknowledgement email sent to client.'
       : 'Acknowledgement email not sent (no email provider configured).';
     
@@ -133,28 +136,31 @@ async function writeAutomationWorkNote(
 export async function automateGoogleWorkspaceAccountAccess(
   payload: ClientIncidentCreate,
   sysId: string,
-  incidentNumber?: string
+  incidentNumber?: string,
+  resolvedEmail?: string
 ): Promise<AutomationResult> {
   logger.info('Running Google Workspace – Account Access automation', {
     sysId,
     incidentNumber,
     client: payload.client,
+    hasResolvedEmail: !!resolvedEmail,
   });
 
   const topic = 'Google Workspace Account Access';
   const resources = GOOGLE_WORKSPACE_ACCOUNT_ACCESS_RESOURCES;
 
-  // Send acknowledgement email if client email is provided
+  // Send acknowledgement email if resolved email is provided
+  // Use resolvedEmail (from resolveContactEmail) instead of payload.clientEmail
   let emailResult = { sent: false, provider: undefined as string | undefined };
-  if (payload.clientEmail) {
+  if (resolvedEmail) {
     emailResult = await sendAcknowledgementEmail(
-      payload.clientEmail,
+      resolvedEmail,
       incidentNumber || 'N/A',
       topic,
       resources
     );
   } else {
-    logger.debug('No client email provided, skipping acknowledgement email');
+    logger.debug('No resolved email provided, skipping acknowledgement email');
   }
 
   // Write automation work note
@@ -162,7 +168,8 @@ export async function automateGoogleWorkspaceAccountAccess(
     sysId,
     topic,
     resources,
-    emailResult.sent
+    emailResult.sent,
+    resolvedEmail
   );
 
   return {

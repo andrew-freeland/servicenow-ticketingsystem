@@ -82,6 +82,8 @@ export const ClientIncidentCreateSchema = z.object({
   detailedDescription: z.string().optional().describe('Detailed description'),
   priority: ClientPriorityEnum.optional().describe('Priority level'),
   clientEmail: z.string().email().optional().describe('Client email for acknowledgement'),
+  clientId: z.string().optional().describe('Future: reference to a client record in ServiceNow'),
+  clientContactId: z.string().optional().describe('Future: reference to a contact record in ServiceNow'),
 }).strict(); // Reject unknown fields
 
 export type ClientIncidentCreate = z.infer<typeof ClientIncidentCreateSchema>;

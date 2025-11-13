@@ -8,6 +8,7 @@ import { logger } from '../utils/logger';
 import { IncidentCreate, ListIncidentsQuery, type ClientIncidentCreate } from '../utils/validation';
 import { classifyAndRecommend, type ClassificationResource } from './classification';
 import { automateGoogleWorkspaceAccountAccess, hasAutomation } from './automation';
+import { resolveContactEmail } from './contacts';
 
 export interface Incident {
   sys_id: string;
@@ -25,18 +26,24 @@ export interface Incident {
 /**
  * Create a new incident
  */
-export async function createIncident(payload: IncidentCreate): Promise<Incident> {
+export async function createIncident(
+  payload: IncidentCreate,
+  additionalFields?: Record<string, unknown>
+): Promise<Incident> {
   logger.info('Creating incident', { product: payload.product, short_description: payload.short_description });
 
   try {
-    const result = await servicenowClient.create<Incident>('incident', {
+    const snPayload: Record<string, unknown> = {
       short_description: payload.short_description,
       description: payload.description,
       priority: payload.priority,
       impact: payload.impact,
       urgency: payload.urgency,
       category: payload.product,
-    });
+      ...additionalFields,
+    };
+
+    const result = await servicenowClient.create<Incident>('incident', snPayload);
 
     logger.info('Incident created', { sys_id: result.result.sys_id, number: result.result.number });
     return result.result;
@@ -82,6 +89,15 @@ export async function createClientIncident(
     shortDescription: payload.shortDescription,
   });
 
+  // Resolve contact email (Phase 1: uses clientEmail, Phase 2+: will look up from SN)
+  const resolvedContact = await resolveContactEmail(payload);
+  logger.debug('Resolved contact email', { 
+    email: resolvedContact.email ? '***REDACTED***' : null,
+    hasClientEmail: !!payload.clientEmail,
+    hasClientId: !!payload.clientId,
+    hasClientContactId: !!payload.clientContactId,
+  });
+
   // Adapt the client payload to the legacy IncidentCreate shape for ServiceNow
   const legacyPayload: IncidentCreate = {
     product: payload.category, // category maps to product field (which becomes category in SN)
@@ -96,8 +112,22 @@ export async function createClientIncident(
     priority: payload.priority, // Pass as-is
   };
 
+  // Build additional ServiceNow fields including resolved email
+  const additionalFields: Record<string, unknown> = {
+    u_client: payload.client,
+    u_source: 'BBP Support Counter',
+    contact_type: 'self-service',
+  };
+
+  // Map resolved email to ServiceNow field (if present)
+  // Note: This assumes a custom field u_client_email exists or is safe to send.
+  // ServiceNow will ignore unknown fields, but our logic should not depend on reading it back.
+  if (resolvedContact.email) {
+    additionalFields.u_client_email = resolvedContact.email;
+  }
+
   // Create incident in ServiceNow
-  const incident = await createIncident(legacyPayload);
+  const incident = await createIncident(legacyPayload, additionalFields);
 
   // Check if this category has special automation (Candidate 1: Google Workspace – Account Access)
   let automationResult = null;
@@ -106,7 +136,8 @@ export async function createClientIncident(
     automationResult = await automateGoogleWorkspaceAccountAccess(
       payload,
       incident.sys_id,
-      incident.number
+      incident.number,
+      resolvedContact.email ?? undefined
     );
   }
 
@@ -122,13 +153,25 @@ export async function createClientIncident(
 
   // Write automation activity to work_notes (only if automation didn't already handle it)
   if (!automationResult) {
-    const automationNote = `[AUTO] Classified as '${enrichment.topic}'`;
+    const workNotesLines: string[] = [];
+    workNotesLines.push(`[AUTO] Classified as '${enrichment.topic}'`);
+    
+    // Add email notification note if email was resolved and used
+    if (resolvedContact.email) {
+      workNotesLines.push(
+        `[AUTO] Sent acknowledgement and self-service resources to ${resolvedContact.email}.`
+      );
+    }
+
     const resourceList = enrichment.recommendedResources
       .map(r => `  • ${r.label} (${r.type})`)
       .join('\n');
-    const fullNote = resourceList
-      ? `${automationNote}\nRecommended resources:\n${resourceList}`
-      : automationNote;
+    
+    if (resourceList) {
+      workNotesLines.push(`Recommended resources:\n${resourceList}`);
+    }
+
+    const fullNote = workNotesLines.join('\n');
 
     try {
       await servicenowClient.patch('incident', incident.sys_id, {
@@ -140,6 +183,7 @@ export async function createClientIncident(
       logger.warn('Failed to write automation work_notes', { error, sys_id: incident.sys_id });
     }
   }
+  // Note: If automation ran, it already writes work notes including email notification status
 
   // Use automation enrichment if available, otherwise use classification enrichment
   const finalTopic = automationResult?.enrichment.topic || enrichment.topic;

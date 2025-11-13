@@ -1,16 +1,70 @@
-# ServiceNow Integration Playground
+# ServiceNow Enterprise Integration Platform
 
-A comprehensive foundation for building compliant, production-ready integrations with ServiceNow Developer Instances (PDIs). This repository provides canonical rules, validation protocols, and enforcement mechanisms to ensure all ServiceNow integrations follow best practices, security standards, and platform constraints.
+A production-ready enterprise integration framework for ServiceNow, demonstrating advanced API integration patterns, comprehensive documentation practices, and enterprise-grade error handling. This project showcases full-stack development capabilities with TypeScript, Node.js, and REST API integration.
 
-## 🎯 Docs & Integrations Help Desk
+## Project Overview
 
-This repository includes a working **Docs & Integrations Help Desk** demo application that demonstrates:
-- Incident intake and management
-- KB article suggestions based on incident descriptions
-- Incident resolution tracking
-- Help desk statistics and deflection metrics
+This repository contains a complete ServiceNow integration platform with a working Client Support Counter application. The project demonstrates enterprise-level software engineering practices including:
 
-### Quick Start
+- Enterprise API integration with ServiceNow Table API
+- Comprehensive validation and error handling systems
+- Production-ready authentication patterns (Basic Auth, OAuth 2.0, API Key)
+- Automated classification and resource recommendation systems
+- Complete documentation framework with 12+ technical specification documents
+- TypeScript-based architecture with Zod schema validation
+- Modular, testable code structure following SOLID principles
+
+## Technical Highlights
+
+### Enterprise Integration Capabilities
+
+- **ServiceNow Table API Integration**: Full CRUD operations with proper pagination, field selection, and query optimization
+- **Multi-Authentication Support**: Basic Auth, OAuth 2.0, and API Key authentication with secure credential management
+- **Robust Error Handling**: Exponential backoff retry logic for rate limiting (429) and server errors (5xx), with proper handling of client errors (4xx)
+- **Production-Ready Patterns**: Environment variable configuration, secret redaction in logs, least-privilege access control
+
+### Architecture & Code Quality
+
+- **TypeScript + Node.js**: Type-safe development with strict TypeScript configuration
+- **Zod Schema Validation**: Runtime type validation for all API inputs and outputs
+- **Modular Architecture**: Clean separation of concerns with dedicated modules for clients, services, and utilities
+- **Comprehensive Testing**: Seed data generators and test utilities for integration testing
+
+### Documentation Excellence
+
+- **12+ Technical Specification Documents**: Complete documentation covering rulesets, validators, API guides, error handling, and setup procedures
+- **Cross-Referenced Documentation**: All documents include proper cross-references and table of contents
+- **Production-Ready Guides**: Setup guides, API references, and troubleshooting documentation
+
+## Client Support Counter Application
+
+A fully functional help desk application that demonstrates real-world ServiceNow integration:
+
+### Features
+
+- **Incident Management**: Create, list, and manage ServiceNow incidents through REST API
+- **Auto-Classification**: Intelligent classification system that categorizes incidents and recommends resources
+- **Automation Activity Tracking**: Real-time tracking of automation events through ServiceNow work notes
+- **Knowledge Base Integration**: KB article suggestions based on incident descriptions
+- **Statistics & Analytics**: Help desk metrics and deflection tracking
+
+### Technology Stack
+
+- **Backend**: Node.js with Express.js
+- **Language**: TypeScript with strict type checking
+- **Validation**: Zod for schema validation
+- **API Client**: Custom ServiceNow Table API wrapper with retry logic
+- **Authentication**: Multi-method support (Basic, OAuth, API Key)
+
+## Quick Start
+
+### Prerequisites
+
+- Node.js 18+
+- pnpm (or npm)
+- ServiceNow Personal Developer Instance (PDI)
+
+### Installation
 
 ```bash
 # 1. Install dependencies
@@ -29,7 +83,7 @@ pnpm dev
 
 The server will start on `http://localhost:3000` (or port specified in `PORT`).
 
-### cURL Smoke Tests
+### API Testing
 
 ```bash
 # Health check
@@ -41,439 +95,184 @@ curl -s http://localhost:3000/incidents
 # Create incident
 curl -s -X POST http://localhost:3000/incident \
   -H "Content-Type: application/json" \
-  -d '{"product":"Product X","short_description":"OAuth callback failing"}'
+  -d '{"client":"Test Client","category":"Other","shortDescription":"Test incident"}'
 
-# Get KB suggestions (replace <SYS_ID> with actual incident sys_id)
-curl -s -X POST http://localhost:3000/incident/<SYS_ID>/suggest
-
-# Resolve incident (replace <SYS_ID> with actual incident sys_id)
-# Note: Sets state=6, close_code="Solution provided", and close_notes from resolution_note
-curl -s -X POST http://localhost:3000/incident/<SYS_ID>/resolve \
-  -H "Content-Type: application/json" \
-  -d '{"resolution_note":"Resolved via KB-0001"}'
+# Get automation activity
+curl -s http://localhost:3000/automation-activity?limit=50
 
 # Get statistics
 curl -s http://localhost:3000/stats
 ```
 
-### Documentation
+## Documentation
+
+### Application Documentation
 
 - **[API Reference](docs/API_REFERENCE.md)** - Complete API endpoint documentation
 - **[Architecture](docs/ARCHITECTURE.md)** - System architecture and design decisions
 - **[ServiceNow Integration](docs/SERVICE_NOW.md)** - ServiceNow API usage patterns
 - **[Runbook](docs/RUNBOOK.md)** - Operational guide and troubleshooting
 
----
+### ServiceNow Integration Documentation
 
-## 📚 Repository Overview
+Full documentation lives in: `/docs/servicenow/`
 
-This repository contains three core documents that work together to establish a complete integration framework:
+#### Core Documentation
 
-1. **Integration Ruleset v1.0** - The canonical knowledge base defining all ServiceNow integration rules
-2. **INTEGRATION_VALIDATOR.md** - The enforcement layer ("The Enforcer") with validation checklists
-3. **VALIDATOR_META_CONTEXT.md** - Meta-principles explaining how to interpret and apply the validator
+- **[ServiceNow Integration Ruleset v1.0](docs/servicenow/SERVICENOW_RULESET_v1.0.md)** - Canonical knowledge base defining all ServiceNow integration rules, authentication patterns, API usage, and best practices.
+- **[Integration Validator](docs/servicenow/INTEGRATION_VALIDATOR.md)** - 7-category validation system that enforces ruleset compliance before code generation.
+- **[Validator Meta-Context](docs/servicenow/VALIDATOR_META_CONTEXT.md)** - Interpretation guide explaining how to apply the validator, no-assumptions policy, and clarification protocols.
+- **[Default Architectural Profile (DAP v1.0)](docs/servicenow/DAP_v1.0.md)** - Default project structure, directory layout, naming conventions, and TypeScript defaults.
 
----
+#### Backend & Integration
 
-## 🏗️ Architecture & Document Relationships
+- **[ServiceNow Backend Flow](docs/servicenow/SERVICENOW_BACKEND_FLOW.md)** - Complete end-to-end pipeline describing what happens when UI submits a request, including incident creation, classification, and notifications.
+- **[BBP Support Counter Backend Spec](docs/servicenow/BBP_SUPPORT_COUNTER_BACKEND_SPEC.md)** - Full backend specification for ticket creation, ServiceNow enrichment, classification logic, and automation activity extraction.
+- **[ServiceNow Field Mappings](docs/servicenow/SERVICENOW_FIELD_MAPPINGS.md)** - Complete reference for how UI form fields map to ServiceNow incident fields, including priority and category mappings.
+- **[ServiceNow Automations](docs/servicenow/SERVICENOW_AUTOMATIONS.md)** - Classification rules, resource recommendations, work notes format, and how automation activity is tracked.
+- **[ServiceNow Notifications](docs/servicenow/SERVICENOW_NOTIFICATIONS.md)** - Email notification rules, templates, and when Andrew and clients receive notifications.
 
-```mermaid
-graph TB
-    subgraph "Foundation Layer"
-        A[Integration Ruleset v1.0<br/>Canonical Knowledge Base<br/>The Law]
-    end
-    
-    subgraph "Enforcement Layer"
-        B[INTEGRATION_VALIDATOR.md<br/>The Enforcer<br/>Runtime Guardrails]
-        C[VALIDATOR_META_CONTEXT.md<br/>Meta-Principles<br/>Interpretation Guide]
-    end
-    
-    subgraph "Application Layer"
-        D[ServiceNow Integration Code<br/>TypeScript/Node.js]
-        E[API Wrappers<br/>/src/servicenow.ts]
-        F[Seed Generators<br/>/src/seed.ts]
-        G[Report Pullers<br/>/src/reports.ts]
-        H[Webhook Handlers<br/>/src/webhooks/]
-    end
-    
-    A -->|Defines Rules| B
-    A -->|Takes Priority| C
-    C -->|Interprets| B
-    B -->|Validates| D
-    D --> E
-    D --> F
-    D --> G
-    D --> H
-    
-    style A fill:#e1f5ff
-    style B fill:#fff4e1
-    style C fill:#fff4e1
-    style D fill:#e8f5e9
-    style E fill:#e8f5e9
-    style F fill:#e8f5e9
-    style G fill:#e8f5e9
-    style H fill:#e8f5e9
+#### API & Error Handling
+
+- **[ServiceNow Table API Guide](docs/servicenow/SERVICENOW_TABLE_API_GUIDE.md)** - Complete API usage reference with GET/POST/PATCH examples, query parameters, pagination, and best practices.
+- **[ServiceNow Error Handling Guide](docs/servicenow/SERVICENOW_ERROR_HANDLING_GUIDE.md)** - Retry strategies, error categories, logging format with secret redaction, and common error scenarios.
+
+#### Setup & Configuration
+
+- **[ServiceNow Setup Guide](docs/servicenow/SERVICENOW_SETUP.md)** - Getting started with PDI credentials, required roles, API access configuration, and how to find field names and debug data policy failures.
+
+## Architecture Overview
+
+### System Architecture
+
+```
+Client (Browser)
+    ↓
+Express Server (Node.js/TypeScript)
+    ↓
+ServiceNow Client (API Wrapper)
+    ↓
+ServiceNow Table API
+    ↓
+ServiceNow PDI Instance
 ```
 
----
+### Key Components
 
-## 🔄 Validation Flow Process
+- **Express Server**: HTTP API server with validation middleware
+- **ServiceNow Client**: Reusable API wrapper with retry logic and error handling
+- **Classification Engine**: Pure function for topic classification and resource recommendations
+- **Automation Module**: Category-specific automation logic with email notifications
+- **Contact Resolution**: Email address resolution with future ServiceNow CRM integration
 
-```mermaid
-flowchart TD
-    Start[ServiceNow Request Received] --> Check{Is this<br/>ServiceNow-related?}
-    Check -->|No| NormalResponse[Normal Response<br/>No Validation]
-    Check -->|Yes| Validate[Run 7-Category Validation]
-    
-    Validate --> V1[1. Ruleset Compliance]
-    Validate --> V2[2. Architecture & Modularity]
-    Validate --> V3[3. Authentication]
-    Validate --> V4[4. API Syntax]
-    Validate --> V5[5. Error Handling]
-    Validate --> V6[6. Documentation]
-    Validate --> V7[7. Instance Constraints]
-    
-    V1 --> AllPass{All Categories<br/>Pass?}
-    V2 --> AllPass
-    V3 --> AllPass
-    V4 --> AllPass
-    V5 --> AllPass
-    V6 --> AllPass
-    V7 --> AllPass
-    
-    AllPass -->|Yes| OutputHeader[Output Validation Header<br/>with Pass Status]
-    AllPass -->|No| Stop[STOP Execution]
-    
-    Stop --> Explain[Explain Violations]
-    Explain --> Suggest[Suggest Compliant Alternatives]
-    Suggest --> Wait[Wait for User Approval]
-    
-    OutputHeader --> FinalOutput[--- FINAL OUTPUT BELOW THIS LINE ---<br/>Generated Code/Instructions]
-    
-    style Start fill:#e3f2fd
-    style Validate fill:#fff9c4
-    style AllPass fill:#c8e6c9
-    style Stop fill:#ffcdd2
-    style FinalOutput fill:#e8f5e9
+### Code Organization
+
+```
+/src
+  /clients          # API clients (ServiceNow, etc.)
+  /docsdesk         # Domain-specific modules (intake, classification, automation)
+  /utils            # Shared utilities (logger, retry, validation)
+  /seed             # Test data generators
+/config             # Environment configuration
+/docs               # Complete documentation
 ```
 
----
+## Key Technical Decisions
 
-## 🎯 Integration Architecture Pattern
+### Authentication & Security
 
-```mermaid
-graph LR
-    subgraph "Local Environment"
-        A[Environment Variables<br/>or GCP Secret Manager]
-        B[config.ts<br/>Environment Config]
-        C[ServiceNowClient<br/>API Wrapper]
-    end
-    
-    subgraph "ServiceNow PDI"
-        D[Table API<br/>/api/now/table/]
-        E[Scripted REST API<br/>Custom Endpoints]
-        F[Import Set API<br/>Bulk Ingestion]
-    end
-    
-    subgraph "Integration Components"
-        G[/src/servicenow.ts<br/>API Wrapper]
-        H[/src/seed.ts<br/>Test Data Generators]
-        I[/src/reports.ts<br/>Report Pullers]
-        J[/src/webhooks/<br/>Outbound Handlers]
-    end
-    
-    A --> B
-    B --> C
-    C --> G
-    G --> D
-    G --> E
-    G --> F
-    
-    G --> H
-    G --> I
-    G --> J
-    
-    style A fill:#ffebee
-    style B fill:#e1f5ff
-    style C fill:#e8f5e9
-    style D fill:#fff9c4
-    style E fill:#fff9c4
-    style F fill:#fff9c4
-    style G fill:#e8f5e9
-    style H fill:#e8f5e9
-    style I fill:#e8f5e9
-    style J fill:#e8f5e9
-```
+- **Multi-Method Support**: Basic Auth (default), OAuth 2.0, and API Key authentication
+- **Secure Credential Storage**: Environment variables in development, GCP Secret Manager ready for production
+- **Least-Privilege Access**: Service accounts with minimal required roles (web_service_admin, itil, itil_admin)
+- **Secret Redaction**: All logs automatically redact passwords, API keys, and tokens
 
----
+### Error Handling & Resilience
 
-## 📋 Validation Categories
+- **Exponential Backoff**: Retry logic with jitter for rate limiting (429) and server errors (5xx)
+- **No Retry on Client Errors**: Proper handling of 4xx errors without unnecessary retries
+- **Capped Retries**: Maximum 5 attempts to prevent infinite loops
+- **Comprehensive Logging**: All errors logged with context and redacted secrets
 
-```mermaid
-mindmap
-  root((ServiceNow<br/>Validation))
-    Ruleset Compliance
-      Aligns with v1.0
-      No violations
-      Stop on conflict
-    Architecture
-      Modular structure
-      TypeScript + Zod/Joi
-      Hot-swappable clients
-      Environment variables
-    Authentication
-      Basic/OAuth/API Key
-      Standard env vars
-      Least privilege roles
-      Secure storage
-    API Syntax
-      Correct URL structure
-      Query parameters
-      Pagination
-      User-Agent header
-      PATCH for updates
-    Error Handling
-      Retry 429/5xx
-      No retry 4xx
-      Exponential backoff
-      Capped retries
-      Secret redaction
-    Documentation
-      Credentials list
-      API endpoints
-      Retry logic
-      Output format
-      Required plugins/roles
-    Instance Constraints
-      PDI compatible
-      Ephemeral data
-      10-min shutdown
-      7-day reset cycle
-      No enterprise features
-```
+### API Integration Patterns
 
----
+- **Field Selection**: Always use sysparm_fields to minimize payload size
+- **Pagination**: Proper pagination for large datasets (1,000 records per call recommended)
+- **PATCH for Updates**: Use PATCH instead of PUT for partial updates
+- **Input Validation**: Zod schemas validate all inputs before API calls
 
-## 🔐 Authentication Flow
+## Validation Framework
 
-```mermaid
-sequenceDiagram
-    participant Dev as Developer
-    participant Env as Environment Variables
-    participant Client as ServiceNowClient
-    participant SN as ServiceNow PDI
-    
-    Dev->>Env: Set credentials<br/>(SERVICE_NOW_INSTANCE,<br/>SERVICE_NOW_USER, etc.)
-    Dev->>Client: Initialize with env vars
-    Client->>Client: Validate credentials present
-    Client->>SN: API Request<br/>(Basic Auth/OAuth/API Key)
-    SN->>Client: Response (200/429/4xx/5xx)
-    
-    alt HTTP 429 or 5xx
-        Client->>Client: Exponential Backoff
-        Client->>SN: Retry Request
-    else HTTP 4xx
-        Client->>Client: Log Error (No Retry)
-        Client->>Dev: Return Error
-    else HTTP 200
-        Client->>Dev: Return Data
-    end
-```
+The project includes a comprehensive 7-category validation system that ensures all ServiceNow integrations comply with best practices:
 
----
+1. **Ruleset Compliance** - Alignment with canonical integration rules
+2. **Architecture & Modularity** - Code structure and organization
+3. **Authentication** - Auth patterns and credential management
+4. **API Syntax** - Correct API usage and query parameters
+5. **Error Handling** - Retry logic and error management
+6. **Documentation** - Required documentation completeness
+7. **Instance Constraints** - PDI compatibility and limitations
 
-## 📦 What's Included
+## Production Readiness
 
-### Core Documents
+### Security
 
-| Document | Purpose | Role |
-|----------|---------|------|
-| **Integration Ruleset v1.0** | Canonical knowledge base | Defines all rules, constraints, and best practices |
-| **INTEGRATION_VALIDATOR.md** | Validation checklist | Enforces ruleset compliance before code generation |
-| **VALIDATOR_META_CONTEXT.md** | Interpretation guide | Explains how to apply the validator correctly |
+- No hardcoded credentials
+- Environment variable configuration
+- Secret redaction in logs
+- Least-privilege role assignment
+- Secure authentication methods
 
-### Key Features
+### Reliability
 
-✅ **Comprehensive Ruleset** - Complete coverage of authentication, API usage, rate limiting, and best practices  
-✅ **Automated Validation** - 7-category validation ensures compliance before code generation  
-✅ **No Assumptions Policy** - Always asks for clarification rather than guessing  
-✅ **PDI-Optimized** - Designed specifically for Personal Developer Instances  
-✅ **Security-First** - Enforces least-privilege access and secure credential storage  
-✅ **Modular Architecture** - Prescribes clean, testable, maintainable code structure  
+- Exponential backoff retry logic
+- Proper error categorization
+- Comprehensive error logging
+- Idempotent operations
+- Graceful degradation
 
----
+### Maintainability
 
-## 🚀 Quick Start
+- TypeScript for type safety
+- Modular architecture
+- Comprehensive documentation
+- Clear separation of concerns
+- Test utilities and seed data
 
-### 1. Understand the Foundation
+## ServiceNow PDI Constraints
 
-Read the documents in this order:
-1. **Integration Ruleset v1.0** - Learn the rules
-2. **VALIDATOR_META_CONTEXT.md** - Understand how to apply them
-3. **INTEGRATION_VALIDATOR.md** - See the validation checklist
+ServiceNow Personal Developer Instances have specific limitations that this project handles:
 
-### 2. Set Up Environment
+- **10-Minute Inactivity Shutdown**: Instance automatically shuts down after inactivity
+- **7-Day Reset Cycle**: Instance resets if not accessed within 7 days
+- **Ephemeral Data**: All data is temporary and may be lost
+- **Manual Plugin Activation**: Plugins must be enabled manually (cannot be done via API)
 
-Create a `.env` file with required credentials:
+The integration is designed to be resilient to these constraints with idempotent operations and proper error handling.
 
-```bash
-SERVICE_NOW_INSTANCE=your-instance.service-now.com
-SERVICE_NOW_USER=your-username
-SERVICE_NOW_PASSWORD=your-password
-# OR for OAuth:
-# SERVICE_NOW_CLIENT_ID=your-client-id
-# SERVICE_NOW_CLIENT_SECRET=your-client-secret
-```
+## Skills Demonstrated
 
-### 3. Build Your Integration
+This project demonstrates proficiency in:
 
-Follow the prescribed architecture:
-- `/src/servicenow.ts` - API wrapper
-- `/src/seed.ts` - Test data generators
-- `/src/reports.ts` - Report pullers
-- `/src/webhooks/` - Outbound handlers
+- **Enterprise API Integration**: ServiceNow Table API, REST API design, authentication patterns
+- **TypeScript Development**: Type-safe code, interfaces, generics, strict type checking
+- **Node.js/Express**: Server-side development, middleware, routing, error handling
+- **Schema Validation**: Zod for runtime type validation
+- **Error Handling**: Retry logic, exponential backoff, error categorization
+- **Security Best Practices**: Credential management, secret redaction, least-privilege access
+- **Documentation**: Comprehensive technical documentation with cross-references
+- **Software Architecture**: Modular design, separation of concerns, SOLID principles
+- **Testing**: Test data generation, integration testing utilities
 
-### 4. Validate Before Deploying
-
-All code must pass the 7-category validation before being considered production-ready.
-
----
-
-## 📖 Document Details
-
-### Integration Ruleset v1.0
-
-The canonical source of truth covering:
-- **Authentication & Security** - Auth types, credential storage, role requirements
-- **Rate Limiting & Retries** - Exponential backoff, error handling strategies
-- **API Usage Rules** - Table API, Scripted REST API, Import Set API
-- **Best Practices** - Code structure, modularity, testing strategies
-- **Instance Constraints** - PDI limitations, plugin management, ephemeral data
-
-### INTEGRATION_VALIDATOR.md
-
-The enforcement layer with 7 validation categories:
-1. **Ruleset Compliance** - Ensures alignment with v1.0
-2. **Architecture & Modularity** - Verifies code structure
-3. **Authentication** - Validates auth patterns and credentials
-4. **API Syntax** - Checks API usage correctness
-5. **Error Handling** - Ensures proper retry logic
-6. **Documentation** - Verifies required documentation
-7. **Instance Constraints** - Confirms PDI compatibility
-
-### VALIDATOR_META_CONTEXT.md
-
-Meta-principles explaining:
-- Document hierarchy and relationships
-- Enforcement behavior
-- No-assumptions policy
-- Clarification protocols
-- Output format requirements
-- Scope of application
-
----
-
-## 🎓 Usage in AI Development
-
-When using this repository with AI coding assistants (like Cursor):
-
-1. **Load the Ruleset** - Provide "Integration Ruleset v1.0" as system context
-2. **Activate the Validator** - Include "INTEGRATION_VALIDATOR.md" as enforcement layer
-3. **Apply Meta-Context** - Use "VALIDATOR_META_CONTEXT.md" for interpretation
-4. **Request ServiceNow Work** - AI will automatically validate all outputs
-
-The AI will:
-- ✅ Run 7-category validation before returning code
-- ✅ Stop and explain if validation fails
-- ✅ Ask for clarification when information is missing
-- ✅ Never assume ServiceNow features exist
-- ✅ Follow all ruleset guidelines automatically
-
----
-
-## 🔒 Security & Best Practices
-
-### Credential Management
-- ❌ Never hardcode credentials
-- ✅ Use environment variables or GCP Secret Manager
-- ✅ Follow standard naming conventions
-- ✅ Redact secrets in logs
-
-### Access Control
-- ❌ Never use global admin role
-- ✅ Use service account with `web_service_admin` + specific roles
-- ✅ Apply least-privilege principle
-
-### Error Handling
-- ✅ Retry with exponential backoff for 429/5xx
-- ❌ Never retry 4xx client errors
-- ✅ Cap retry attempts
-- ✅ Log all failures with redacted secrets
-
----
-
-## 📊 Supported APIs
-
-| API | Description | Use Case |
-|-----|-------------|----------|
-| **Table API** | Full CRUD operations | Standard record management |
-| **Scripted REST API** | Custom endpoints | Custom business logic |
-| **Import Set API** | Bulk ingestion | Large data imports |
-
----
-
-## ⚠️ PDI Constraints
-
-ServiceNow Personal Developer Instances have specific limitations:
-
-- **Inactivity Shutdown** - Automatically shuts down after 10 minutes of inactivity
-- **Reset Cycle** - Resets if not accessed within 7 days
-- **Ephemeral Data** - All data is temporary and may be lost
-- **Plugin Activation** - Plugins must be manually enabled (cannot be done via API)
-- **No Rate Limits** - No fixed global rate limits, but may return 429 if configured
-
-### PDI Reset Recovery
-
-If your PDI instance sleeps or resets:
-
-1. **Wake the instance** - Access it via browser or API call
-2. **Re-seed data** - Run `pnpm seed` to recreate KB articles and test incidents
-3. **Verify connection** - Run `pnpm test` to confirm everything works
-
-The service is designed to be idempotent - re-running seed operations won't create duplicates.
-
----
-
-## 🤝 Contributing
-
-This is a foundational ruleset. When updating:
-
-1. **Ruleset v1.0** takes priority over validator
-2. If conflicts arise, update the appropriate document
-3. Maintain backward compatibility when possible
-4. Document all changes clearly
-
----
-
-## 📝 License
-
-This repository contains documentation and rules for ServiceNow integration development. Use freely for your ServiceNow integration projects.
-
----
-
-## 🔗 Related Resources
+## Related Resources
 
 - [ServiceNow Developer Portal](https://developer.servicenow.com/)
 - [ServiceNow API Documentation](https://docs.servicenow.com/)
 - [ServiceNow REST API Explorer](https://docs.servicenow.com/bundle/vancouver-application-development/page/integrate/inbound-rest/concept/c_RESTAPI.html)
 
----
+## License
 
-## ✅ Status
-
-**Foundation Complete** - All core documents created and validated. Ready for ServiceNow-compliant integration development.
+This repository contains documentation and code for ServiceNow integration development. Use freely for ServiceNow integration projects.
 
 ---
 
 *Last Updated: 2024*
-
