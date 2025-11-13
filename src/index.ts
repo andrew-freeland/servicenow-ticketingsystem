@@ -5,6 +5,8 @@
 
 import express, { Request, Response, NextFunction } from 'express';
 import { createServer } from 'http';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import { config } from '../config/env';
 import { logger } from './utils/logger';
 import { IncidentCreateSchema, ResolveRequestSchema, ListIncidentsQuerySchema } from './utils/validation';
@@ -764,7 +766,7 @@ app.get('/', (_req: Request, res: Response) => {
                 <div class="form-field">
                   <label for="client">Client <span class="optional">(required)</span></label>
                   <select id="client" name="client" required>
-                    <option value="">Select a client...</option>
+                    <option value="" selected>Select a client...</option>
                     <option value="Archer Insurance">Archer Insurance</option>
                     <option value="Hachman Construction">Hachman Construction</option>
                     <option value="Other">Other</option>
@@ -774,7 +776,7 @@ app.get('/', (_req: Request, res: Response) => {
                 <div class="form-field">
                   <label for="category">Category <span class="optional">(required)</span></label>
                   <select id="category" name="category" required>
-                    <option value="">Select a category...</option>
+                    <option value="" selected>Select a category...</option>
                     <option value="HubSpot / CRM">HubSpot / CRM</option>
                     <option value="Email Templates">Email Templates</option>
                     <option value="Website">Website</option>
@@ -795,8 +797,8 @@ app.get('/', (_req: Request, res: Response) => {
                 </div>
 
                 <div class="form-field full-width">
-                  <label for="detailed-description">Detailed description <span class="optional">(required)</span></label>
-                  <textarea id="detailed-description" name="detailed_description" required placeholder="Provide more details about the issue..."></textarea>
+                  <label for="detailed-description">Detailed description <span class="optional">(optional)</span></label>
+                  <textarea id="detailed-description" name="detailed_description" placeholder="Provide more details about the issue..."></textarea>
                 </div>
 
                 <div class="form-field">
@@ -1016,7 +1018,15 @@ app.get('/', (_req: Request, res: Response) => {
             backButton.remove();
             wrapper.style.display = '';
             select.value = '';
-            trigger.textContent = select.options[0]?.text || 'Select...';
+            // Reset to placeholder text based on dropdown type
+            if (select.id === 'client' || select.name === 'client') {
+              trigger.textContent = 'Select a client...';
+            } else if (select.id === 'category' || select.name === 'category') {
+              trigger.textContent = 'Select a category...';
+            } else {
+              const firstNonEmptyOption = Array.from(select.options).find(opt => opt.value !== '');
+              trigger.textContent = firstNonEmptyOption?.text || 'Select...';
+            }
             wrapper.classList.remove('converted-to-input');
           });
           formField.appendChild(backButton);
@@ -1037,7 +1047,20 @@ app.get('/', (_req: Request, res: Response) => {
           const trigger = document.createElement('button');
           trigger.type = 'button';
           trigger.className = 'custom-dropdown-trigger';
-          trigger.textContent = select.options[select.selectedIndex]?.text || select.options[0]?.text || 'Select...';
+          // Set initial placeholder text - show placeholder if value is empty
+          const selectedOption = select.options[select.selectedIndex];
+          if (selectedOption && selectedOption.value !== '' && selectedOption.value !== null) {
+            trigger.textContent = selectedOption.text;
+          } else {
+            if (select.id === 'client' || select.name === 'client') {
+              trigger.textContent = 'Select a client...';
+            } else if (select.id === 'category' || select.name === 'category') {
+              trigger.textContent = 'Select a category...';
+            } else {
+              const firstNonEmptyOption = Array.from(select.options).find(opt => opt.value !== '');
+              trigger.textContent = firstNonEmptyOption?.text || 'Select...';
+            }
+          }
           
           const menu = document.createElement('div');
           menu.className = 'custom-dropdown-menu';
@@ -1047,14 +1070,18 @@ app.get('/', (_req: Request, res: Response) => {
             menu.classList.add('expanded');
           }
           
-          // Add search input for Client dropdown
+          // Add search input for Client and Category dropdowns
           let searchInput = null;
-          if (select.id === 'client' || select.name === 'client') {
+          if (select.id === 'client' || select.name === 'client' || select.id === 'category' || select.name === 'category') {
             const searchContainer = document.createElement('div');
             searchContainer.className = 'custom-dropdown-search';
             searchInput = document.createElement('input');
             searchInput.type = 'text';
-            searchInput.placeholder = 'Search clients...';
+            if (select.id === 'client' || select.name === 'client') {
+              searchInput.placeholder = 'Search clients...';
+            } else {
+              searchInput.placeholder = 'Search categories...';
+            }
             searchInput.addEventListener('input', (e) => {
               const searchTerm = e.target.value.toLowerCase();
               const options = menu.querySelectorAll('.custom-dropdown-option');
@@ -1071,7 +1098,8 @@ app.get('/', (_req: Request, res: Response) => {
             menu.appendChild(searchContainer);
           }
           
-          Array.from(select.options).forEach((option, index) => {
+          // Filter out empty value options
+          Array.from(select.options).filter(option => option.value !== '').forEach((option, index) => {
             const optionEl = document.createElement('div');
             optionEl.className = 'custom-dropdown-option' + (option.selected ? ' selected' : '');
             optionEl.textContent = option.text;
@@ -1311,6 +1339,45 @@ app.get('/stats', async (_req: Request, res: Response, next: NextFunction) => {
     res.json(stats);
   } catch (error) {
     next(error);
+  }
+});
+
+/**
+ * Serve documentation files
+ */
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+app.get('/docs/API_REFERENCE.md', (_req: Request, res: Response) => {
+  try {
+    const content = readFileSync(join(process.cwd(), 'docs', 'API_REFERENCE.md'), 'utf-8');
+    res.send(`<pre style="font-family: monospace; font-size: 14px; line-height: 1.6; padding: 20px; white-space: pre-wrap; word-wrap: break-word;">${escapeHtml(content)}</pre>`);
+  } catch (error) {
+    res.status(404).send('Documentation not found');
+  }
+});
+
+app.get('/docs/RUNBOOK.md', (_req: Request, res: Response) => {
+  try {
+    const content = readFileSync(join(process.cwd(), 'docs', 'RUNBOOK.md'), 'utf-8');
+    res.send(`<pre style="font-family: monospace; font-size: 14px; line-height: 1.6; padding: 20px; white-space: pre-wrap; word-wrap: break-word;">${escapeHtml(content)}</pre>`);
+  } catch (error) {
+    res.status(404).send('Documentation not found');
+  }
+});
+
+app.get('/docs/ARCHITECTURE.md', (_req: Request, res: Response) => {
+  try {
+    const content = readFileSync(join(process.cwd(), 'docs', 'ARCHITECTURE.md'), 'utf-8');
+    res.send(`<pre style="font-family: monospace; font-size: 14px; line-height: 1.6; padding: 20px; white-space: pre-wrap; word-wrap: break-word;">${escapeHtml(content)}</pre>`);
+  } catch (error) {
+    res.status(404).send('Documentation not found');
   }
 });
 
