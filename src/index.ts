@@ -80,208 +80,968 @@ app.get('/', (_req: Request, res: Response) => {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Docs & Integrations Help Desk</title>
+  <title>Client Support Counter - BBP Support</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bbp-orange: #fb923c;
+      --bbp-gold: #fbbf24;
+      --bbp-charcoal: #0b1120;
+      --bbp-slate: #111827;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      margin: 0;
       min-height: 100vh;
-      padding: 20px;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif;
+      background:
+        radial-gradient(circle at top left, #f9fafb 0%, #e5edf7 35%, #0f172a 100%),
+        radial-gradient(circle at bottom right, rgba(251, 191, 36, 0.35), transparent 60%);
+      color: #0b1120;
+      line-height: 1.6;
     }
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-      overflow: hidden;
+
+    .page {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
-    header {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      padding: 30px;
+
+    /* Hero Section */
+    .hero {
+      padding: 3.5rem 1.5rem 2.5rem;
       text-align: center;
     }
-    header h1 { font-size: 2.5em; margin-bottom: 10px; }
-    header p { opacity: 0.9; font-size: 1.1em; }
-    .content {
-      padding: 40px;
+
+    .hero-content {
+      max-width: 960px;
+      margin: 0 auto;
     }
-    .section {
-      margin-bottom: 40px;
+
+    .hero-eyebrow {
+      font-size: 0.85rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #fb923c;
+      margin-bottom: 0.75rem;
     }
-    .section h2 {
-      color: #333;
-      margin-bottom: 20px;
-      padding-bottom: 10px;
-      border-bottom: 2px solid #667eea;
+
+    .hero-title {
+      font-size: clamp(2.6rem, 4vw, 3.3rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 0.75rem;
+      color: #0b1120;
     }
-    .endpoint {
-      background: #f8f9fa;
-      border-left: 4px solid #667eea;
-      padding: 15px;
-      margin-bottom: 15px;
-      border-radius: 4px;
+
+    .hero-sub {
+      max-width: 620px;
+      margin: 0 auto 1.75rem;
+      font-size: 1rem;
+      color: #4b5563;
     }
-    .endpoint code {
-      background: #e9ecef;
-      padding: 2px 6px;
-      border-radius: 3px;
-      font-family: 'Monaco', 'Courier New', monospace;
-      font-size: 0.9em;
-    }
-    .method {
-      display: inline-block;
-      padding: 4px 8px;
-      border-radius: 4px;
-      font-weight: bold;
-      font-size: 0.85em;
-      margin-right: 8px;
-    }
-    .method.get { background: #28a745; color: white; }
-    .method.post { background: #007bff; color: white; }
-    .status {
-      display: inline-block;
-      padding: 8px 16px;
-      background: #28a745;
-      color: white;
-      border-radius: 6px;
-      font-weight: bold;
-      margin-top: 20px;
-    }
-    .test-btn {
-      display: inline-block;
-      padding: 10px 20px;
-      background: #667eea;
-      color: white;
+
+    .hero-cta {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.9rem 1.9rem;
+      border-radius: 999px;
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.98rem;
+      background: linear-gradient(135deg, #fb923c, #fbbf24);
+      color: #fff;
       text-decoration: none;
-      border-radius: 6px;
-      margin-top: 10px;
-      transition: background 0.3s;
+      box-shadow: 0 10px 20px rgba(251, 146, 60, 0.35);
+      transition: transform 0.13s ease, box-shadow 0.13s ease;
     }
-    .test-btn:hover { background: #5568d3; }
-    pre {
-      background: #2d2d2d;
-      color: #f8f8f2;
-      padding: 15px;
+
+    .hero-cta:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 14px 26px rgba(251, 146, 60, 0.4);
+    }
+
+    /* Main Content */
+    .main {
+      flex: 1;
+      padding: 0 1.5rem 3.5rem;
+      display: flex;
+      justify-content: center;
+    }
+
+    .console {
+      width: 100%;
+      max-width: 1100px;
+      margin: 0 auto;
+      background: rgba(249, 250, 251, 0.92);
+      border-radius: 26px;
+      padding: 1.5rem 1.75rem 2.5rem;
+      padding-bottom: 3rem;
+      box-shadow:
+        0 18px 45px rgba(15, 23, 42, 0.17),
+        0 0 0 1px rgba(148, 163, 184, 0.25);
+      backdrop-filter: blur(16px);
+    }
+
+    /* Tabs */
+    .tabs {
+      display: inline-flex;
+      border-radius: 999px;
+      padding: 0.25rem;
+      background: #e5e7eb;
+      margin-bottom: 1.25rem;
+    }
+
+    .tab-button {
+      position: relative;
+      border: none;
+      background: transparent;
+      padding: 0.55rem 1.3rem;
+      border-radius: 999px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: #4b5563;
+      cursor: pointer;
+      transition: color 0.15s ease, background 0.15s ease, transform 0.12s ease;
+    }
+
+    .tab-button:hover {
+      color: #111827;
+      transform: translateY(-0.5px);
+    }
+
+    .tab-button.active {
+      background: #fff;
+      color: #111827;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      box-shadow: 0 2px 4px rgba(15, 23, 42, 0.08);
+    }
+
+    /* Tab Panels */
+    .tab-panels {
+      position: relative;
+      min-height: 220px;
+    }
+
+    .tab-panel {
+      opacity: 0;
+      transform: translateY(10px);
+      pointer-events: none;
+      position: relative;
+      transition: opacity 0.18s ease-out, transform 0.18s ease-out;
+      display: none;
+    }
+
+    .tab-panel.active {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+      display: block;
+    }
+
+    .tab-panel-inner {
+      padding-top: 1rem;
+    }
+
+    /* Form Styles */
+    .request-form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem 1.25rem;
+    }
+
+    .form-field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      font-size: 0.86rem;
+    }
+
+    .form-field.full-width {
+      grid-column: 1 / -1;
+    }
+
+    .form-field label {
+      font-weight: 500;
+      color: #374151;
+    }
+
+    .form-field input,
+    .form-field select,
+    .form-field textarea {
+      border-radius: 10px;
+      border: 1px solid rgba(251, 146, 60, 0.3);
+      padding: 0.55rem 0.7rem;
+      font-size: 0.9rem;
+      outline: none;
+      background: #fff;
+      font-family: inherit;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .form-field input:hover,
+    .form-field select:hover,
+    .form-field textarea:hover {
+      border-color: rgba(251, 146, 60, 0.5);
+    }
+
+    .form-field input:focus,
+    .form-field select:focus,
+    .form-field textarea:focus {
+      border-color: var(--bbp-orange);
+      box-shadow: 0 0 0 3px rgba(251, 146, 60, 0.1);
+    }
+
+    /* Custom Dropdown Styles */
+    .custom-dropdown {
+      position: relative;
+      width: 100%;
+    }
+
+    .custom-dropdown-trigger {
+      width: 100%;
+      border-radius: 10px;
+      border: 1px solid rgba(251, 146, 60, 0.3);
+      padding: 0.55rem 0.7rem;
+      padding-right: 2.5rem;
+      font-size: 0.9rem;
+      outline: none;
+      background: #fff;
+      font-family: inherit;
+      cursor: pointer;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      text-align: left;
+      color: #111827;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .custom-dropdown-trigger:hover {
+      border-color: rgba(251, 146, 60, 0.5);
+    }
+
+    .custom-dropdown-trigger:focus {
+      border-color: var(--bbp-orange);
+      box-shadow: 0 0 0 3px rgba(251, 146, 60, 0.1);
+    }
+
+    .custom-dropdown-trigger::after {
+      content: '';
+      width: 12px;
+      height: 12px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23fb923c' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-size: contain;
+      flex-shrink: 0;
+    }
+
+    .custom-dropdown.open .custom-dropdown-trigger::after {
+      transform: rotate(180deg);
+    }
+
+    .custom-dropdown-menu {
+      position: absolute;
+      left: 0;
+      right: 0;
+      background: #f9fafb;
+      border: 1px solid rgba(251, 146, 60, 0.2);
+      border-radius: 10px;
+      box-shadow: 0 10px 25px rgba(15, 23, 42, 0.15);
+      z-index: 1000;
+      max-height: 6rem;
+      overflow-y: auto;
+      display: none;
+      padding: 0.5rem 0;
+    }
+
+    .custom-dropdown-menu.open-down {
+      top: 100%;
+      margin-top: 0.25rem;
+      margin-bottom: 0;
+    }
+
+    .custom-dropdown-menu.open-up {
+      bottom: 100%;
+      margin-bottom: 0.25rem;
+      margin-top: 0;
+    }
+
+    .custom-dropdown.open .custom-dropdown-menu {
+      display: block;
+    }
+
+    .custom-dropdown-option {
+      padding: 0.75rem 1rem;
+      color: #374151;
+      cursor: pointer;
+      transition: background-color 0.15s ease, color 0.15s ease;
+      font-size: 0.9rem;
+    }
+
+    .custom-dropdown-option:hover,
+    .custom-dropdown-option.selected {
+      background: rgba(251, 146, 60, 0.1);
+      color: var(--bbp-orange);
+    }
+
+    .custom-dropdown-option:first-child {
+      border-top-left-radius: 10px;
+      border-top-right-radius: 10px;
+    }
+
+    .custom-dropdown-option:last-child {
+      border-bottom-left-radius: 10px;
+      border-bottom-right-radius: 10px;
+    }
+
+    /* Hide native select but keep it for form submission */
+    .form-field select {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+      width: 1px;
+      height: 1px;
+    }
+
+    .form-field textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    .form-field .optional {
+      color: #9ca3af;
+      font-weight: 400;
+    }
+
+    .form-actions {
+      margin-top: 1rem;
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+    }
+
+    .submit-btn {
+      padding: 0.75rem 1.5rem;
+      background: linear-gradient(135deg, #fb923c, #fbbf24);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 12px rgba(251, 146, 60, 0.25);
+    }
+
+    .submit-btn:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(251, 146, 60, 0.35);
+    }
+
+    .submit-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .demo-message {
+      margin-top: 1rem;
+      padding: 12px;
+      background: #fef3c7;
+      border: 1px solid #fbbf24;
+      border-radius: 10px;
+      color: #92400e;
+      font-size: 0.875rem;
+      display: none;
+    }
+
+    .demo-message.show {
+      display: block;
+    }
+
+    /* Ticket List */
+    .ticket-list,
+    .activity-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .ticket-row {
+      margin-bottom: 0.5rem;
+    }
+
+    .ticket-link {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 0;
+      color: #374151;
+      text-decoration: none;
+      font-size: 0.9375rem;
+      border-bottom: 1px solid #e5e7eb;
+      transition: color 0.15s ease, background-color 0.15s ease;
+      cursor: pointer;
+    }
+
+    .ticket-link:hover {
+      color: var(--bbp-orange);
+      background-color: rgba(251, 146, 60, 0.04);
+      text-decoration: underline;
+    }
+
+    .ticket-client {
+      font-weight: 500;
+      color: #111827;
+    }
+
+    .ticket-divider {
+      color: #9ca3af;
+    }
+
+    .ticket-category {
+      color: #6b7280;
+    }
+
+    .ticket-summary {
+      flex: 1;
+      color: #374151;
+    }
+
+    .ticket-state {
+      font-weight: 500;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.8125rem;
+      background: #e5e7eb;
+      color: #374151;
+    }
+
+    .ticket-row:last-child .ticket-link {
+      border-bottom: none;
+    }
+
+    .activity-list li {
+      padding: 0.75rem 0;
+      border-bottom: 1px solid #e5e7eb;
+      color: #374151;
+      font-size: 0.9375rem;
+      line-height: 1.5;
+    }
+
+    .activity-list li:last-child {
+      border-bottom: none;
+    }
+
+    /* Footer */
+    .footer-status {
+      background: rgba(11, 17, 32, 0.85);
+      padding: 20px;
+      text-align: center;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(8px);
+    }
+
+    .footer-content {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .status-section {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.875rem;
+      color: #e5e7eb;
+    }
+
+    .status-badge {
+      padding: 6px 12px;
       border-radius: 6px;
-      overflow-x: auto;
-      margin-top: 10px;
+      font-weight: 600;
+      font-size: 0.8125rem;
+    }
+
+    .status-unknown {
+      background: #6b7280;
+      color: white;
+    }
+
+    .status-ok {
+      background: #10b981;
+      color: white;
+    }
+
+    .status-error {
+      background: #ef4444;
+      color: white;
+    }
+
+    .docs-links {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .docs-links a {
+      color: #e5e7eb;
+      text-decoration: none;
+      font-size: 0.875rem;
+      transition: color 0.2s;
+    }
+
+    .docs-links a:hover {
+      color: var(--bbp-gold);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .hero-title {
+        font-size: 2.2rem;
+      }
+
+      .hero-sub {
+        font-size: 0.95rem;
+      }
+
+      .request-form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .footer-content {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .tabs {
+        width: 100%;
+        flex-wrap: wrap;
+      }
+
+      .tab-button {
+        flex: 1;
+        min-width: 0;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.85rem;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <h1>📚 Docs & Integrations Help Desk</h1>
-      <p>ServiceNow Integration API</p>
+  <div class="page">
+    <header class="hero">
+      <div class="hero-content">
+        <div class="hero-eyebrow">BBP Support</div>
+        <h1 class="hero-title">Client Support Counter</h1>
+        <p class="hero-sub">
+          Log requests from clients straight into ServiceNow for smart responses.
+        </p>
+        <a href="#console" class="hero-cta" id="hero-cta">Create a Request</a>
+      </div>
     </header>
-    <div class="content">
-      <div class="section">
-        <h2>API Status</h2>
-        <div id="status" class="status">Checking...</div>
-        <a href="/health" class="test-btn" target="_blank">Test Health Endpoint</a>
+
+    <main class="main">
+      <div class="console" id="console">
+        <div class="tabs">
+          <button class="tab-button active" data-tab="new-request">New Request</button>
+          <button class="tab-button" data-tab="recent-tickets">Recent Tickets</button>
+          <button class="tab-button" data-tab="automation-activity">Automation Activity</button>
+        </div>
+
+        <div class="tab-panels">
+          <section id="tab-new-request" class="tab-panel active">
+            <div class="tab-panel-inner">
+              <form id="request-form">
+              <div class="request-form-grid">
+                <div class="form-field">
+                  <label for="client">Client <span class="optional">(required)</span></label>
+                  <select id="client" name="client" required>
+                    <option value="">Select a client...</option>
+                    <option value="Archer Insurance">Archer Insurance</option>
+                    <option value="Hachman Construction">Hachman Construction</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+
+                <div class="form-field">
+                  <label for="category">Category <span class="optional">(required)</span></label>
+                  <select id="category" name="category" required>
+                    <option value="">Select a category...</option>
+                    <option value="HubSpot / CRM">HubSpot / CRM</option>
+                    <option value="Email Templates">Email Templates</option>
+                    <option value="Website">Website</option>
+                    <option value="Apple Business Essentials">Apple Business Essentials</option>
+                    <option value="Integrations">Integrations</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+
+                <div class="form-field">
+                  <label for="error-code">Error Code <span class="optional">(optional)</span></label>
+                  <input type="text" id="error-code" name="error_code" placeholder="e.g., 500, Bounce 5.1.0, HubSpot WF-123">
+                </div>
+
+                <div class="form-field full-width">
+                  <label for="short-description">Short description <span class="optional">(required)</span></label>
+                  <input type="text" id="short-description" name="short_description" required placeholder="Brief summary of the issue">
+                </div>
+
+                <div class="form-field full-width">
+                  <label for="detailed-description">Detailed description <span class="optional">(required)</span></label>
+                  <textarea id="detailed-description" name="detailed_description" required placeholder="Provide more details about the issue..."></textarea>
+                </div>
+
+                <div class="form-field">
+                  <label for="priority">Priority <span class="optional">(optional)</span></label>
+                  <select id="priority" name="priority">
+                    <option value="">Select priority...</option>
+                    <option value="Low">Low</option>
+                    <option value="Normal">Normal</option>
+                    <option value="High">High</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-actions">
+                <button type="submit" class="submit-btn">Submit Request</button>
+                <div class="demo-message" id="demo-message">
+                  Demo only: this will create a ServiceNow ticket in the next phase.
+                </div>
+              </div>
+            </form>
+            </div>
+          </section>
+
+          <section id="tab-recent-tickets" class="tab-panel">
+            <div class="tab-panel-inner">
+              <ul class="ticket-list">
+                <li class="ticket-row">
+                  <a class="ticket-link" href="#" target="_blank" rel="noopener noreferrer" data-sys-id="placeholder-1">
+                    <span class="ticket-client">Archer Insurance</span>
+                    <span class="ticket-divider">•</span>
+                    <span class="ticket-category">HubSpot / CRM</span>
+                    <span class="ticket-divider">•</span>
+                    <span class="ticket-summary">Lifecycle emails duplicating</span>
+                    <span class="ticket-state">Open</span>
+                  </a>
+                </li>
+                <li class="ticket-row">
+                  <a class="ticket-link" href="#" target="_blank" rel="noopener noreferrer" data-sys-id="placeholder-2">
+                    <span class="ticket-client">Hachman Construction</span>
+                    <span class="ticket-divider">•</span>
+                    <span class="ticket-category">Apple Business Essentials</span>
+                    <span class="ticket-divider">•</span>
+                    <span class="ticket-summary">New foreman iPhone</span>
+                    <span class="ticket-state">In Progress</span>
+                  </a>
+                </li>
+                <li class="ticket-row">
+                  <a class="ticket-link" href="#" target="_blank" rel="noopener noreferrer" data-sys-id="placeholder-3">
+                    <span class="ticket-client">Other</span>
+                    <span class="ticket-divider">•</span>
+                    <span class="ticket-category">Website</span>
+                    <span class="ticket-divider">•</span>
+                    <span class="ticket-summary">Homepage layout tweak</span>
+                    <span class="ticket-state">Resolved</span>
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </section>
+
+          <section id="tab-automation-activity" class="tab-panel">
+            <div class="tab-panel-inner">
+              <ul class="activity-list">
+                <li>Sent Archer HubSpot Playbook for CRM ticket INC0001234.</li>
+                <li>Queued follow-up reminder for Hachman website change request.</li>
+                <li>Suggested Apple Business Essentials device guide for new iPhone setup.</li>
+              </ul>
+            </div>
+          </section>
+        </div>
       </div>
+    </main>
 
-      <div class="section">
-        <h2>Available Endpoints</h2>
-        
-        <div class="endpoint">
-          <span class="method get">GET</span>
-          <code>/health</code>
-          <p>Health check endpoint</p>
+    <footer class="footer-status">
+      <div class="footer-content">
+        <div class="status-section">
+          <span>ServiceNow:</span>
+          <span id="sn-status-badge" class="status-badge status-unknown">Checking...</span>
         </div>
-
-        <div class="endpoint">
-          <span class="method post">POST</span>
-          <code>/seed</code>
-          <p>Seed KB articles and incidents</p>
-        </div>
-
-        <div class="endpoint">
-          <span class="method post">POST</span>
-          <code>/incident</code>
-          <p>Create a new incident</p>
-          <pre>{
-  "product": "Product X",
-  "short_description": "Issue description"
-}</pre>
-        </div>
-
-        <div class="endpoint">
-          <span class="method get">GET</span>
-          <code>/incidents</code>
-          <p>List incidents (query params: state, limit, offset)</p>
-        </div>
-
-        <div class="endpoint">
-          <span class="method post">POST</span>
-          <code>/incident/:sys_id/suggest</code>
-          <p>Get KB article suggestions for an incident</p>
-        </div>
-
-        <div class="endpoint">
-          <span class="method post">POST</span>
-          <code>/incident/:sys_id/resolve</code>
-          <p>Resolve an incident</p>
-          <pre>{
-  "resolution_note": "Resolved via KB-0001"
-}</pre>
-        </div>
-
-        <div class="endpoint">
-          <span class="method get">GET</span>
-          <code>/stats</code>
-          <p>Get help desk statistics</p>
+        <div class="docs-links">
+          <a href="/docs/API_REFERENCE.md" target="_blank">API Reference</a>
+          <a href="/docs/RUNBOOK.md" target="_blank">Runbook</a>
+          <a href="/docs/ARCHITECTURE.md" target="_blank">Architecture</a>
         </div>
       </div>
-
-      <div class="section">
-        <h2>Quick Test</h2>
-        <p>Try these commands in your terminal:</p>
-        <pre># Health check
-curl http://localhost:3000/health
-
-# List incidents
-curl http://localhost:3000/incidents
-
-# Get statistics
-curl http://localhost:3000/stats</pre>
-      </div>
-
-      <div class="section">
-        <h2>Documentation</h2>
-        <p>For complete API documentation, see:</p>
-        <ul style="margin-left: 20px; margin-top: 10px;">
-          <li><a href="/docs/API_REFERENCE.md" target="_blank">API Reference</a></li>
-          <li><a href="/docs/RUNBOOK.md" target="_blank">Runbook</a></li>
-          <li><a href="/docs/ARCHITECTURE.md" target="_blank">Architecture</a></li>
-        </ul>
-      </div>
-    </div>
+    </footer>
   </div>
 
   <script>
-    // Check API health on load
-    fetch('/health')
-      .then(res => res.json())
-      .then(data => {
-        const statusEl = document.getElementById('status');
-        if (data.status === 'ok') {
-          statusEl.textContent = '✅ API is running';
-          statusEl.style.background = '#28a745';
-        } else {
-          statusEl.textContent = '⚠️ API status unknown';
-          statusEl.style.background = '#ffc107';
-          statusEl.style.color = '#000';
-        }
-      })
-      .catch(err => {
-        const statusEl = document.getElementById('status');
-        statusEl.textContent = '❌ API not responding';
-        statusEl.style.background = '#dc3545';
+    // Expose ServiceNow instance URL to frontend
+    window.SERVICENOW_INSTANCE = ${JSON.stringify(config.SERVICE_NOW_INSTANCE)};
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const tabButtons = Array.from(document.querySelectorAll('.tab-button'));
+      const panels = {
+        'new-request': document.getElementById('tab-new-request'),
+        'recent-tickets': document.getElementById('tab-recent-tickets'),
+        'automation-activity': document.getElementById('tab-automation-activity'),
+      };
+
+      function activateTab(id) {
+        tabButtons.forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.tab === id);
+        });
+
+        Object.entries(panels).forEach(([panelId, el]) => {
+          el.classList.toggle('active', panelId === id);
+        });
+      }
+
+      tabButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const id = btn.dataset.tab;
+          if (!id) return;
+          activateTab(id);
+        });
       });
+
+      // Hero CTA scroll to New Request tab and ensure it's active
+      const cta = document.querySelector('.hero-cta');
+      if (cta) {
+        cta.addEventListener('click', (e) => {
+          e.preventDefault();
+          activateTab('new-request');
+          const target = document.getElementById('console');
+          if (target) {
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        });
+      }
+
+      // Form submission handler
+      const form = document.getElementById('request-form');
+      if (form) {
+        form.addEventListener('submit', function(e) {
+          e.preventDefault();
+          
+          const formData = new FormData(this);
+          const data = Object.fromEntries(formData);
+          
+          console.log('Form data:', data);
+          
+          // Show demo message
+          const demoMessage = document.getElementById('demo-message');
+          if (demoMessage) {
+            demoMessage.classList.add('show');
+            
+            // Scroll to message
+            setTimeout(() => {
+              demoMessage.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 100);
+          }
+        });
+      }
+
+      // ServiceNow health check
+      function checkServiceNowHealth() {
+        const badge = document.getElementById('sn-status-badge');
+        if (!badge) return;
+        
+        fetch('/health')
+          .then(res => res.json())
+          .then(data => {
+            if (data.status === 'ok') {
+              badge.textContent = 'Connected';
+              badge.className = 'status-badge status-ok';
+            } else {
+              badge.textContent = 'Not connected';
+              badge.className = 'status-badge status-error';
+            }
+          })
+          .catch(err => {
+            badge.textContent = 'Not connected';
+            badge.className = 'status-badge status-error';
+          });
+      }
+
+      // Check health on page load
+      checkServiceNowHealth();
+
+      // Convert dropdown to text input when "Other" is selected
+      function convertDropdownToTextInput(wrapper, select, trigger) {
+        // Check if already converted
+        if (wrapper.classList.contains('converted-to-input')) return;
+        
+        // Create text input
+        const textInput = document.createElement('input');
+        textInput.type = 'text';
+        textInput.className = 'form-field input';
+        textInput.style.cssText = 'border-radius: 10px; border: 1px solid rgba(251, 146, 60, 0.3); padding: 0.55rem 0.7rem; font-size: 0.9rem; outline: none; background: #fff; font-family: inherit; transition: border-color 0.2s, box-shadow 0.2s; width: 100%;';
+        textInput.placeholder = 'Enter ' + (select.name === 'client' ? 'client name' : select.name) + '...';
+        textInput.name = select.name;
+        textInput.required = select.required;
+        
+        // Sync value
+        textInput.value = select.value === 'Other' ? '' : select.value;
+        
+        // Sync value back to select on input
+        textInput.addEventListener('input', () => {
+          select.value = textInput.value || 'Other';
+        });
+        
+        // Replace wrapper with input
+        const formField = wrapper.closest('.form-field');
+        if (formField) {
+          wrapper.style.display = 'none';
+          formField.insertBefore(textInput, wrapper);
+          wrapper.classList.add('converted-to-input');
+          
+          // Add a "back" button or make it so they can clear to go back
+          const backButton = document.createElement('button');
+          backButton.type = 'button';
+          backButton.textContent = '← Back to list';
+          backButton.style.cssText = 'margin-top: 0.25rem; margin-left: auto; padding: 0.25rem 0; font-size: 0.75rem; color: rgba(251, 146, 60, 0.6); background: transparent; border: none; cursor: pointer; text-decoration: underline; display: block; text-align: right;';
+          backButton.addEventListener('click', () => {
+            textInput.remove();
+            backButton.remove();
+            wrapper.style.display = '';
+            select.value = '';
+            trigger.textContent = select.options[0]?.text || 'Select...';
+            wrapper.classList.remove('converted-to-input');
+          });
+          formField.appendChild(backButton);
+        }
+      }
+
+      // Initialize custom dropdowns
+      function initCustomDropdowns() {
+        const selects = document.querySelectorAll('.form-field select');
+        
+        selects.forEach(select => {
+          // Skip if already converted
+          if (select.closest('.custom-dropdown')) return;
+          
+          const wrapper = document.createElement('div');
+          wrapper.className = 'custom-dropdown';
+          
+          const trigger = document.createElement('button');
+          trigger.type = 'button';
+          trigger.className = 'custom-dropdown-trigger';
+          trigger.textContent = select.options[select.selectedIndex]?.text || select.options[0]?.text || 'Select...';
+          
+          const menu = document.createElement('div');
+          menu.className = 'custom-dropdown-menu';
+          
+          Array.from(select.options).forEach((option, index) => {
+            const optionEl = document.createElement('div');
+            optionEl.className = 'custom-dropdown-option' + (option.selected ? ' selected' : '');
+            optionEl.textContent = option.text;
+            optionEl.dataset.value = option.value;
+            
+            optionEl.addEventListener('click', () => {
+              select.value = option.value;
+              trigger.textContent = option.text;
+              
+              // Update selected state
+              menu.querySelectorAll('.custom-dropdown-option').forEach(opt => {
+                opt.classList.remove('selected');
+              });
+              optionEl.classList.add('selected');
+              
+              // If "Other" is selected, convert to text input
+              if (option.value.toLowerCase() === 'other' || option.text.toLowerCase() === 'other') {
+                convertDropdownToTextInput(wrapper, select, trigger);
+              }
+              
+              // Trigger change event for form validation
+              select.dispatchEvent(new Event('change', { bubbles: true }));
+              
+              wrapper.classList.remove('open');
+            });
+            
+            menu.appendChild(optionEl);
+          });
+          
+          trigger.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const isOpening = !wrapper.classList.contains('open');
+            wrapper.classList.toggle('open');
+            
+            if (isOpening) {
+              // Calculate if dropdown should open upward
+              const rect = trigger.getBoundingClientRect();
+              const spaceBelow = window.innerHeight - rect.bottom;
+              const spaceAbove = rect.top;
+              const dropdownHeight = Math.min(6 * 16, menu.scrollHeight + 16); // 6rem in pixels + padding
+              
+              // Remove previous positioning classes
+              menu.classList.remove('open-up', 'open-down');
+              
+              // If not enough space below but enough above, open upward
+              if (spaceBelow < dropdownHeight && spaceAbove > dropdownHeight) {
+                menu.classList.add('open-up');
+              } else {
+                menu.classList.add('open-down');
+              }
+            }
+          });
+          
+          // Close when clicking outside
+          document.addEventListener('click', (e) => {
+            if (!wrapper.contains(e.target)) {
+              wrapper.classList.remove('open');
+            }
+          });
+          
+          wrapper.appendChild(trigger);
+          wrapper.appendChild(menu);
+          select.parentNode.insertBefore(wrapper, select);
+          wrapper.appendChild(select);
+        });
+      }
+
+      // Initialize dropdowns on page load
+      initCustomDropdowns();
+
+      // Build ServiceNow links for ticket entries
+      function buildServiceNowLink(sysId) {
+        if (!sysId) {
+          return '#';
+        }
+        const base = window.SERVICENOW_INSTANCE;
+        if (!base) return '#';
+        // Build ServiceNow incident URL
+        // Note: For placeholder data, this will link to ServiceNow but the incident may not exist
+        return base + '/nav_to.do?uri=incident.do?sys_id=' + encodeURIComponent(sysId);
+      }
+
+      // Update ticket links with ServiceNow URLs
+      const ticketLinks = document.querySelectorAll('.ticket-link[data-sys-id]');
+      ticketLinks.forEach(link => {
+        const sysId = link.getAttribute('data-sys-id');
+        const href = buildServiceNowLink(sysId);
+        link.setAttribute('href', href);
+      });
+    });
   </script>
 </body>
 </html>
