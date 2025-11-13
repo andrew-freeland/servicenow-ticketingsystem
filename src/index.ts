@@ -666,6 +666,13 @@ app.get('/', (_req: Request, res: Response) => {
       color: #e5e7eb;
     }
 
+    .servicenow-logo {
+      height: 16px;
+      width: auto;
+      display: inline-block;
+      vertical-align: middle;
+    }
+
     .status-badge {
       padding: 6px 12px;
       border-radius: 6px;
@@ -845,7 +852,7 @@ app.get('/', (_req: Request, res: Response) => {
     <footer class="footer-status">
       <div class="footer-content">
         <div class="status-section">
-          <span>ServiceNow:</span>
+          <img src="/download.svg" alt="ServiceNow" class="servicenow-logo" />
           <span id="sn-status-badge" class="status-badge status-unknown">Checking...</span>
         </div>
         <div class="docs-links">
