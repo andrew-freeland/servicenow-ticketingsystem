@@ -1,22 +1,47 @@
+import 'dotenv/config';
 import { z } from 'zod';
 
-const envSchema = z.object({
-  SERVICE_NOW_INSTANCE: z.string().url().describe('ServiceNow instance URL (e.g., https://dev12345.service-now.com)'),
-  SERVICE_NOW_USER: z.string().min(1).describe('ServiceNow username'),
-  SERVICE_NOW_PASSWORD: z.string().min(1).describe('ServiceNow password'),
-  
-  // Optional auth methods (not used unless selected)
-  SERVICE_NOW_CLIENT_ID: z.string().optional().describe('OAuth client ID'),
-  SERVICE_NOW_CLIENT_SECRET: z.string().optional().describe('OAuth client secret'),
-  SERVICE_NOW_API_KEY: z.string().optional().describe('API key for token auth'),
-  
-  // Server config
-  PORT: z.string().default('3000').transform(Number),
-  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
-  
-  // Auth mode selection
-  AUTH_MODE: z.enum(['basic', 'oauth', 'apiKey']).default('basic'),
-});
+const isTest = process.env.NODE_ENV === 'test';
+
+// Helper to convert empty strings to undefined for optional fields
+const emptyToUndefined = (val: unknown) => (val === '' ? undefined : val);
+
+const envSchema = z.preprocess(
+  (input) => {
+    // Convert empty strings to undefined for all fields
+    if (typeof input === 'object' && input !== null) {
+      const processed: Record<string, unknown> = {};
+      for (const [key, value] of Object.entries(input as Record<string, unknown>)) {
+        processed[key] = emptyToUndefined(value);
+      }
+      return processed;
+    }
+    return input;
+  },
+  z.object({
+    SERVICE_NOW_INSTANCE: isTest 
+      ? z.string().url().optional().default('https://test.instance.service-now.com')
+      : z.string().url().describe('ServiceNow instance URL (e.g., https://dev12345.service-now.com)'),
+    SERVICE_NOW_USER: isTest
+      ? z.string().min(1).optional().default('test-user')
+      : z.string().min(1).describe('ServiceNow username'),
+    SERVICE_NOW_PASSWORD: isTest
+      ? z.string().min(1).optional().default('test-password')
+      : z.string().min(1).describe('ServiceNow password'),
+    
+    // Optional auth methods (not used unless selected)
+    SERVICE_NOW_CLIENT_ID: z.string().optional().describe('OAuth client ID'),
+    SERVICE_NOW_CLIENT_SECRET: z.string().optional().describe('OAuth client secret'),
+    SERVICE_NOW_API_KEY: z.string().optional().describe('API key for token auth'),
+    
+    // Server config
+    PORT: z.string().default('3000').transform(Number),
+    NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+    
+    // Auth mode selection
+    AUTH_MODE: z.enum(['basic', 'oauth', 'apiKey']).default('basic'),
+  })
+);
 
 export type Config = z.infer<typeof envSchema>;
 

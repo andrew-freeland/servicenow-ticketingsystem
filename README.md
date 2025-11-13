@@ -47,6 +47,7 @@ curl -s -X POST http://localhost:3000/incident \
 curl -s -X POST http://localhost:3000/incident/<SYS_ID>/suggest
 
 # Resolve incident (replace <SYS_ID> with actual incident sys_id)
+# Note: Sets state=6, close_code="Solution provided", and close_notes from resolution_note
 curl -s -X POST http://localhost:3000/incident/<SYS_ID>/resolve \
   -H "Content-Type: application/json" \
   -d '{"resolution_note":"Resolved via KB-0001"}'
@@ -430,6 +431,16 @@ ServiceNow Personal Developer Instances have specific limitations:
 - **Ephemeral Data** - All data is temporary and may be lost
 - **Plugin Activation** - Plugins must be manually enabled (cannot be done via API)
 - **No Rate Limits** - No fixed global rate limits, but may return 429 if configured
+
+### PDI Reset Recovery
+
+If your PDI instance sleeps or resets:
+
+1. **Wake the instance** - Access it via browser or API call
+2. **Re-seed data** - Run `pnpm seed` to recreate KB articles and test incidents
+3. **Verify connection** - Run `pnpm test` to confirm everything works
+
+The service is designed to be idempotent - re-running seed operations won't create duplicates.
 
 ---
 

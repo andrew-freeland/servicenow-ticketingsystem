@@ -32,7 +32,7 @@ export type SuggestRequest = z.infer<typeof SuggestRequestSchema>;
  */
 export const ResolveRequestSchema = z.object({
   sys_id: z.string().min(1).describe('Incident sys_id'),
-  resolution_note: z.string().min(1).describe('Resolution notes'),
+  resolution_note: z.string().optional().describe('Resolution notes (optional, defaults to "Resolved via knowledge deflection.")'),
 });
 
 export type ResolveRequest = z.infer<typeof ResolveRequestSchema>;

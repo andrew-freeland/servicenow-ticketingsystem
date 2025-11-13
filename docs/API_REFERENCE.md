@@ -234,11 +234,16 @@ Resolve an incident with resolution notes.
   "sys_id": "abc123def456",
   "number": "INC0012345",
   "state": "6",
-  "resolution_code": "Solved (Removed)",
-  "resolution_notes": "Resolved via KB-0001. User updated OAuth redirect URI.",
-  "resolved_at": "2024-01-15T10:30:00.000Z"
+  "close_code": "Solution provided",
+  "close_notes": "Resolved via KB-0001. User updated OAuth redirect URI."
 }
 ```
+
+**Implementation Details:**
+- Sets `state = '6'` (Resolved)
+- Sets `close_code = 'Solution provided'` (required by ServiceNow data policy)
+- Sets `close_notes` from the `resolution_note` request body field
+- **Note:** Resolution code is mandatory in this Zurich PDI; this service respects that data policy by always setting a valid `close_code` choice value.
 
 **Status Codes:**
 - `200` - Resolved successfully

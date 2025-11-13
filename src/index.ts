@@ -4,6 +4,7 @@
  */
 
 import express, { Request, Response, NextFunction } from 'express';
+import { createServer } from 'http';
 import { config } from '../config/env';
 import { logger } from './utils/logger';
 import { IncidentCreateSchema, ResolveRequestSchema, ListIncidentsQuerySchema } from './utils/validation';
@@ -13,7 +14,7 @@ import { resolveIncident } from './docsdesk/resolve';
 import { getStats } from './docsdesk/stats';
 import { seed } from './seed/seed-docsdesk';
 
-const app = express();
+export const app = express();
 app.use(express.json());
 app.use(express.static('public')); // Serve static files from public directory
 
@@ -397,13 +398,16 @@ app.get('/stats', async (_req: Request, res: Response, next: NextFunction) => {
 app.use(errorHandler);
 
 /**
- * Start server
+ * Start server only when not in test mode
  */
-const PORT = config.PORT || 3000;
-
-app.listen(PORT, () => {
-  logger.info(`Docs & Integrations Help Desk server running on port ${PORT}`);
-  logger.info(`Environment: ${config.NODE_ENV}`);
-  logger.info(`ServiceNow instance: ${config.SERVICE_NOW_INSTANCE}`);
-});
+if (process.env.NODE_ENV !== 'test') {
+  const port = Number(process.env.PORT || config.PORT || 3000);
+  const server = createServer(app);
+  
+  server.listen(port, () => {
+    logger.info(`Docs & Integrations Help Desk server running on port ${port}`);
+    logger.info(`Environment: ${config.NODE_ENV}`);
+    logger.info(`ServiceNow instance: ${config.SERVICE_NOW_INSTANCE}`);
+  });
+}
 

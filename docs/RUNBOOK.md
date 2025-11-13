@@ -346,22 +346,36 @@ curl -u "$SERVICE_NOW_USER:$SERVICE_NOW_PASSWORD" \
   "$SERVICE_NOW_INSTANCE/api/now/table/kb_knowledge_base?sysparm_query=title=IT&sysparm_fields=sys_id,title"
 ```
 
-### Incident Close Codes
+### Incident Resolution Code (Close Code)
 
-**Common Close Codes:**
-- `Solved (Permanently)` - Issue resolved permanently
-- `Solved (Removed)` - Issue resolved by removing the cause
-- `Solved (Workaround)` - Issue resolved with a workaround
-- `Not Solved (Not Reproducible)` - Issue cannot be reproduced
-- `Not Solved (Duplicate)` - Duplicate of another incident
-- `Not Solved (Not an Issue)` - Not actually an issue
-- `Cancelled` - Incident cancelled
+**Important:** In this Zurich PDI, the Resolution code field (`close_code`) is **mandatory** when resolving incidents. The service respects this data policy by always setting a valid choice value.
+
+**Current Implementation:**
+- The resolve endpoint sets `close_code = 'Solution provided'`
+- This value must match one of the valid choices in your ServiceNow instance
+- Valid choices in this instance include:
+  - `No resolution provided`
+  - `Resolved by request`
+  - `Resolved by caller`
+  - `Solution provided` ← **Currently used by this service**
+  - `Duplicate`
+  - `Resolved by change`
+  - `Workaround provided`
+  - `Known error`
+  - `Resolved by problem`
+  - `User error`
+
+**How the Resolve Endpoint Works:**
+1. Sets `state = '6'` (Resolved)
+2. Sets `close_code = 'Solution provided'` (required by data policy)
+3. Sets `close_notes` from the `resolution_note` request body field
 
 **Finding Available Close Codes:**
 1. In ServiceNow UI:
-   - Navigate to **System Definition > Choice Lists**
-   - Search for `close_code` or `incident.close_code`
-   - View available options
+   - Navigate to **System Definition > Tables**
+   - Open `incident` table
+   - Find `close_code` field (labeled "Resolution code")
+   - Click on the field and view the Choices tab to see valid values
 
 2. Via API:
    ```bash

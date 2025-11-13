@@ -399,9 +399,9 @@ async function seed(): Promise<void> {
   }
 }
 
-// Run if executed directly
-if (require.main === module) {
-  seed();
+// Run if executed directly (ESM equivalent of require.main === module)
+if (import.meta.url === `file://${process.argv[1]}`) {
+  seed().catch(console.error);
 }
 
 export { seed };
